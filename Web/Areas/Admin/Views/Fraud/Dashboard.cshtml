@@ -1,0 +1,143 @@
+﻿<h2 class="mb-4">Fraud Dashboard</h2>
+
+<div class="row">
+
+    <div class="col-md-3">
+        <div class="card text-center border-primary mb-3">
+            <div class="card-body">
+                <h5>Total Orders</h5>
+                <h2>@ViewBag.TotalOrders</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-center border-warning mb-3">
+            <div class="card-body">
+                <h5>Total Refunds</h5>
+                <h2>@ViewBag.TotalRefunds</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-center border-danger mb-3">
+            <div class="card-body">
+                <h5>Fraud Flags</h5>
+                <h2>@ViewBag.FraudFlags</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5>Fraud Trend</h5>
+            <canvas id="fraudChart"></canvas>
+        </div>
+    </div>
+
+
+
+</div>
+
+<div class="row">
+
+    <div class="col-md-6">
+        <div class="alert alert-warning">
+            Refund Rate: <strong>%@ViewBag.RefundRate</strong>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="alert alert-danger">
+            Fraud Rate: <strong>%@ViewBag.FraudRate</strong>
+        </div>
+    </div>
+
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+
+        <h5>Top Suspicious Orders</h5>
+
+        <table class="table table-sm">
+
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Fraud Flags</th>
+                    <th>Refunds</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @foreach (var o in ViewBag.SuspiciousOrders)
+                {
+                    <tr>
+
+                        <td>
+                            <a asp-area="Admin"
+                               asp-controller="Orders"
+                               asp-action="Details"
+                               asp-route-id="@o.Id">
+
+                                #@o.Id
+                            </a>
+
+                            <a asp-area="Admin"
+                               asp-controller="Fraud"
+                               asp-action="Case"
+                               asp-route-id="@o.Id">
+                                #@o.Id
+                            </a>
+                        </td>
+
+
+
+                        <td class="text-danger">
+                            @o.FraudCount
+                        </td>
+
+                        <td>
+                            <span class="badge bg-danger">@o.FraudCount</span>
+                        </td>
+
+                        <td class="text-warning">
+                            @o.RefundCount
+                        </td>
+
+                        <td>
+                            <span class="badge bg-warning text-dark">@o.RefundCount</span>
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+    var ctx = document.getElementById('fraudChart');
+
+    var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @Html.Raw(Json.Serialize(ViewBag.FraudTrendDates)),
+            datasets: [{
+                label: 'Fraud Events',
+                data: @Html.Raw(Json.Serialize(ViewBag.FraudTrendCounts)),
+                tension: 0.3
+            }]
+        }
+    });
+
+</script>

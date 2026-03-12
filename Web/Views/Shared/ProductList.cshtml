@@ -1,0 +1,39 @@
+﻿@using EShopMVC.Web.ViewModels
+@model ProductListVM
+
+<div class="row">
+    @if (Model.Products != null && Model.Products.Any())
+    {
+        foreach (var product in Model.Products)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name" />
+                    <div class="card-body">
+                        <h5 class="card-title">@product.Name</h5>
+                        <p class="card-text">@product.Price ₺</p>
+                        <p class="text-muted">@product.Category?.Name</p>
+                        <button class="btn btn-primary add-to-cart" data-id="@product.Id">Sepete Ekle</button>
+                        <button class="btn btn-info view-details" data-id="@product.Id">Detay</button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p>Ürün bulunamadı.</p>
+    }
+</div>
+
+<!-- AJAX uyumlu sayfalama -->
+<nav aria-label="Sayfalama">
+    <ul class="pagination justify-content-center">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                <a href="#" class="page-link page-link-ajax" data-page="@i">@i</a>
+            </li>
+        }
+    </ul>
+</nav>

@@ -1,0 +1,31 @@
+﻿<div class="modal fade" id="registerModalPartial" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Kayıt Ol</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form id="registerForm" method="post" asp-controller="Account" asp-action="Register">
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input name="email" type="email" class="form-control" required placeholder="Email adresi" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Şifre</label>
+                        <input name="password" type="password" class="form-control" required placeholder="Şifre" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Şifre (Tekrar)</label>
+                        <input name="confirmPassword" type="password" class="form-control" required placeholder="Şifre tekrar" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success w-100">Kayıt Ol</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

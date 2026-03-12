@@ -1,0 +1,17 @@
+﻿@using EShopMVC.Models
+@model List<Category>
+
+@if (Model != null && Model.Any())
+{
+    @foreach (var cat in Model)
+    {
+        <li>
+            <a class="dropdown-item"
+               asp-controller="Product"
+               asp-action="Index"
+               asp-route-categoryId="@cat.Id">
+                @cat.Name
+            </a>
+        </li>
+    }
+}

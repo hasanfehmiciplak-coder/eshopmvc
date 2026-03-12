@@ -1,0 +1,18 @@
+﻿@using EShopMVC.Modules.Orders
+@using EShopMVC.Modules.Orders.Models
+@model Order
+
+<div class="container mt-5">
+    <div class="alert alert-danger">
+        <h4>❌ Ödeme Başarısız</h4>
+        <p>
+            @ViewBag.ErrorMessage
+        </p>
+    </div>
+
+    <a asp-controller="Cart"
+       asp-action="Index"
+       class="btn btn-primary">
+        Sepete Dön
+    </a>
+</div>

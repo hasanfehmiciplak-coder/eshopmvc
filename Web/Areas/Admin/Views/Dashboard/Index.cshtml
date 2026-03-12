@@ -1,0 +1,387 @@
+﻿@using EShopMVC.Areas.Admin.ViewModels.Dashboard
+@model AdminDashboardViewModel
+
+
+<h2>📊 Yönetim Özeti</h2>
+@if (Model.RecentActivities.Any())
+{
+    foreach (var item in Model.RecentActivities)
+    {
+
+
+
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="card border-danger">
+                    <div class="card-body">
+                        <h6>Aktif Fraud</h6>
+                        <a asp-area="Admin"
+                           asp-controller="Order"
+                           asp-action="Index"
+                           asp-route-fraud="active"
+                           class="text-decoration-none">
+                            <h3 class="text-danger">@Model.ActiveFraudCount</h3>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    📊 Fraud Trend (Last 30 Days)
+                </div>
+
+                <div class="card-body">
+                    <canvas id="fraudTrendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h6>High Risk Fraud</h6>
+                        <a asp-area="Admin"
+                           asp-controller="Order"
+                           asp-action="Index"
+                           asp-route-fraud="high"
+                           class="text-decoration-none">
+                            <h3 class="text-warning">@Model.HighFraudCount</h3>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <h6>Bugünkü İade</h6>
+                        <h3>@Model.TodayRefundCount</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-warning mb-4">
+                <div class="card-header bg-warning text-dark">
+                    ⚠ Top Fraud Rules
+                </div>
+
+                <div class="card-body">
+
+                    @if (ViewBag.TopFraudRules != null && ViewBag.TopFraudRules.Count > 0)
+                    {
+                        <ul class="list-group">
+
+                            @foreach (var rule in ViewBag.TopFraudRules)
+                            {
+                                <li class="list-group-item d-flex justify-content-between">
+
+                                    <span>@rule.Rule</span>
+
+                                    <span>
+                                        @(rule.Rule switch
+                                        {
+                                            "PAYMENT_RETRY_LIMIT" => "Too Many Payment Attempts",
+                                            "REFUND_ABUSE" => "Refund Abuse",
+                                            "MULTIPLE_CARDS" => "Multiple Cards Used",
+                                            _ => rule.Rule
+                                        })
+                                    </span>
+                                </li>
+                            }
+
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-muted">
+                            Henüz fraud rule tetiklenmemiş.
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h6>Toplam İade</h6>
+                        <h3>@Model.TotalRefundAmount ₺</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="fraud-alerts"></div>
+
+        <h4 class="mt-4">🧠 Kullanıcı Risk Dağılımı</h4>
+
+        <a asp-area="Admin"
+           asp-controller="Order"
+           asp-action="Index"
+           asp-route-risk="high"
+           class="text-decoration-none">
+            <h3 class="text-danger">
+                @Model.HighRiskUserCount
+            </h3>
+        </a>
+
+
+
+
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h6>Medium Risk</h6>
+                    <h3 class="text-warning">
+                        @Model.MediumRiskUserCount
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h6>Low Risk</h6>
+                    <h3 class="text-success">
+                        @Model.LowRiskUserCount
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="card border-dark mb-4">
+            <div class="card-header bg-dark text-white">
+                🧠 Fraud Intelligence
+            </div>
+
+            <div class="card-body">
+
+                <div class="row text-center">
+
+                    <div class="col">
+                        <h4>@ViewBag.FraudRate.ToString("0.0")%</h4>
+                        <small>Fraud Rate</small>
+                    </div>
+
+                    <div class="col">
+                        <h4>@ViewBag.BlockedOrders</h4>
+                        <small>Blocked Orders</small>
+                    </div>
+
+                    <div class="col">
+                        <h4>@ViewBag.VelocityAlerts</h4>
+                        <small>Velocity Alerts</small>
+                    </div>
+
+                    <div class="col">
+                        <h4>@ViewBag.HighRiskUserCount</h4>
+                        <small>High Risk Users</small>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card border-danger mb-4">
+            <div class="card-header bg-danger text-white">
+                🚨 Open Fraud Cases
+            </div>
+
+            <div class="card-body">
+
+                @foreach (var c in ViewBag.OpenFraudCases)
+                {
+                    <div>
+                        Case #@c.Id — Order #@c.OrderId
+                    </div>
+                }
+
+            </div>
+        </div>
+
+        <button class="btn btn-warning">
+            Override Fraud Block
+        </button>
+
+        <div class="card border-danger mb-4">
+            <div class="card-header bg-danger text-white">
+                ⚠ Riskli Siparişler
+            </div>
+
+            <div class="card-body">
+
+                @if (ViewBag.RiskyOrders != null && ViewBag.RiskyOrders.Count > 0)
+                {
+                    <ul class="list-group">
+
+                        @foreach (var risky in ViewBag.RiskyOrders)
+                        {
+                            var order = risky.order;
+
+                            <li class="list-group-item d-flex justify-content-between">
+
+                                <a asp-area="Admin"
+                                   asp-controller="Orders"
+                                   asp-action="Details"
+                                   asp-route-id="@order.Id">
+
+                                    Sipariş #@order.Id
+                                </a>
+
+                                <span class="badge @(risky.score >= 60 ? "bg-danger" :
+                                                                   risky.score >= 30 ? "bg-warning" :
+                                                                   "bg-success")">
+
+                                    ⚠ Risk @risky.score
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">
+                        Riskli sipariş bulunmuyor.
+                    </div>
+                }
+
+            </div>
+        </div>
+
+    }
+}
+else
+{
+    <div class="text-muted">Henüz işlem yok</div>
+}
+
+
+
+@if (ViewBag.FraudFilter != null)
+{
+    <div class="alert alert-info">
+        @if (ViewBag.FraudFilter == "high")
+        {
+            <text>
+                <strong>High Fraud</strong> filtrelenmiş siparişler gösteriliyor.
+            </text>
+        }
+        else if (ViewBag.FraudFilter == "active")
+        {
+            <text>
+                <strong>Aktif Fraud</strong> filtrelenmiş siparişler gösteriliyor.
+            </text>
+        }
+    </div>
+}
+
+<h4 class="mt-4">🕒 Son İşlemler</h4>
+
+<ul class="list-group">
+    @foreach (var item in Model.RecentActivities)
+    {
+        <li class="list-group-item">
+            <strong>@item.Date.ToString("dd.MM HH:mm")</strong>
+            —
+            <span class="badge @GetTimelineBadge(item.Type)">
+                @item.Type
+            </span>
+            —
+            @item.Title
+        </li>
+    }
+</ul>
+
+
+
+<hr />
+<h4>📈 Son 7 Gün</h4>
+
+<canvas id="auditChart" height="120"></canvas>
+
+
+<hr />
+@functions {
+    string GetTimelineBadge(string type)
+    {
+        return type switch
+        {
+            "Fraud" => "bg-danger",
+            "Refund" => "bg-info",
+            "Payment" => "bg-success",
+            "Override" => "bg-warning text-dark",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/fraudHub")
+        .build();
+
+    connection.on("FraudDetected", function (data) {
+
+        const alert = `
+            <div class="alert alert-danger alert-dismissible fade show">
+                ⚠ Yeni Fraud Flag
+                <strong>Sipariş #${data.orderId}</strong>
+                (${data.rule})
+            </div>
+        `;
+
+        document.getElementById("fraud-alerts").innerHTML += alert;
+    });
+
+    connection.start();
+
+
+
+
+    const fraudTrendData = @Html.Raw(
+                System.Text.Json.JsonSerializer.Serialize(ViewBag.FraudTrend)
+        );
+
+    const labels = fraudTrendData.map(x => x.Day);
+    const values = fraudTrendData.map(x => x.Count);
+
+    const ctx = document.getElementById('fraudTrendChart');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Fraud Flags',
+                data: values,
+                borderWidth: 2,
+                tension: 0.3,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+
+
+
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/fraudAlertHub")
+        .build();
+
+    connection.on("fraudAlert", function (message) {
+
+    toastr.error(message);
+
+    });
+
+    connection.start();
+
+
+</script>

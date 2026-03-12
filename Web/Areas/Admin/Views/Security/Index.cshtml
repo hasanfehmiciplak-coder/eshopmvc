@@ -1,0 +1,61 @@
+﻿@model List<EShopMVC.Modules.Fraud.Models.BannedIp>
+
+<h2>🔐 Güvenlik Paneli</h2>
+
+<h4>🚫 Banlı IP’ler</h4>
+
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>IP</th>
+            <th>Neden</th>
+            <th>Tarih</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ip in Model)
+        {
+            <tr>
+                <td>@ip.IpAddress</td>
+                <td>@ip.Reason</td>
+                <td>@ip.BannedAt</td>
+                <td>
+                    <form asp-action="UnbanIp" method="post">
+                        <input type="hidden" name="id" value="@ip.Id" />
+                        <button class="btn btn-sm btn-success">Aç</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h4>🔓 Kilitli Kullanıcılar</h4>
+
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Lockout End</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in ViewBag.LockedUsers)
+        {
+            <tr>
+                <td>@u.Email</td>
+                <td>@u.LockoutEnd</td>
+                <td>
+                    <form asp-action="UnlockUser" method="post">
+                        <input type="hidden" name="userId" value="@u.Id" />
+                        <button class="btn btn-sm btn-warning">Kilidi Aç</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

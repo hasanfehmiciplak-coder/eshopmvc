@@ -1,0 +1,13 @@
+﻿@using EShopMVC.Models
+
+@if (Model.Status == RefundStatus.Failed)
+{
+    <form asp-action="RetryNow"
+          asp-route-id="@Model.Id"
+          method="post"
+          class="d-inline">
+        <button class="btn btn-warning">
+            Retry Now
+        </button>
+    </form>
+}

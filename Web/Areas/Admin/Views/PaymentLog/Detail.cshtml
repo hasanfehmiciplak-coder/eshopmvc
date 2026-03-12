@@ -1,0 +1,30 @@
+﻿@using EShopMVC.Modules.Payments.Models
+@model PaymentLog
+
+<h2>💳 Ödeme Detayı</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p><strong>Sipariş:</strong> #@Model.OrderId</p>
+        <p><strong>Durum:</strong> @Model.PaymentStatus</p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger">
+                <strong>Hata:</strong> @Model.ErrorMessage
+            </div>
+        }
+
+        <p class="text-muted">
+            <strong>Tarih:</strong>
+            @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+        </p>
+    </div>
+</div>
+
+<a asp-area="Admin"
+   asp-controller="PaymentLog"
+   asp-action="Index"
+   class="btn btn-secondary mt-3">
+    ← Geri
+</a>

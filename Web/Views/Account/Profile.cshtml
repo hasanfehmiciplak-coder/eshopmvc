@@ -1,0 +1,10 @@
+﻿@if (Model == null)
+{
+    <p>Kullanıcı bulunamadı</p>
+    return;
+}
+
+<h2>Profilim</h2>
+
+<p>Email: @Model.Email</p>
+<p>Kullanıcı adı: @Model.UserName</p>

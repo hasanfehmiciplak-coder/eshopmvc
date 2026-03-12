@@ -1,0 +1,24 @@
+﻿
+@using EShopMVC.Models
+@model Category
+
+<form asp-area="Admin"
+      asp-controller="Category"
+      asp-action="Create"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label>Kategori Adı</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Slug</label>
+        <input asp-for="Slug" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Kaydet</button>
+</form>

@@ -1,0 +1,53 @@
+﻿@using EShopMVC.Web.ViewModels
+@model CheckoutReviewVM
+
+<h3>🧾 Sipariş Özeti</h3>
+
+<p>
+    <strong>Teslimat Adresi:</strong><br />
+    @Model.AddressText
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ürün</th>
+            <th>Fiyat</th>
+            <th>Adet</th>
+            <th>Toplam</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.Price ₺</td>
+                <td>@item.Quantity</td>
+                <td>@(item.Price* item.Quantity) ₺</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="text-end">
+    Genel Toplam: <strong>@Model.Total ₺</strong>
+</h4>
+
+<hr />
+
+<form asp-action="Checkout" method="post">
+    <input type="hidden" name="Address" value="@Model.AddressText" />
+
+    <div class="d-flex justify-content-between">
+        <a asp-controller="Cart"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            ← Sepete Dön
+        </a>
+
+        <button class="btn btn-success btn-lg">
+            ✅ Ödemeye Geç
+        </button>
+    </div>
+</form>

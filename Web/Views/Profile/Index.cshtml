@@ -1,0 +1,55 @@
+﻿@model EShopMVC.Models.ApplicationUser
+@using Microsoft.AspNetCore.Identity
+
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+<h3 class="mb-4">👤 Profil Bilgilerim</h3>
+
+<form asp-action="Update" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label>Ad Soyad</label>
+        <input asp-for="FullName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Avatar</label><br />
+        <img src="@(Model.AvatarPath ?? "/images/default-avatar.png")"
+             width="120"
+             class="rounded mb-2" />
+        <input asp-for="AvatarPath" type="file" class="form-control" />
+    </div>
+
+    <button class="btn btn-primary">Kaydet</button>
+</form>
+
+@if (ViewBag.Success != null)
+{
+    <div class="alert alert-success mt-3">@ViewBag.Success</div>
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger mt-3">@ViewBag.Error</div>
+}
+
+<hr />
+
+@if (User.IsInRole("Admin"))
+{
+    <div class="alert alert-warning">
+        <strong>Admin Alanı</strong><br />
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+            ➜ Admin Paneline Git
+        </a>
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success mt-3">
+        @TempData["Success"]
+    </div>
+}

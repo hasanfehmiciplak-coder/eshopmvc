@@ -1,0 +1,181 @@
+﻿<nav class="navbar navbar-dark bg-dark navbar-expand-lg">
+    <div class="container-fluid">
+
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a asp-area="Admin"
+                   asp-controller="Dashboard"
+                   asp-action="Index"
+                   class="navbar-brand">
+                    Admin Panel
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="Admin" asp-controller="Fraud" asp-action="Dashboard">
+                    Fraud Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="Admin" asp-controller="Category" asp-action="Index">Kategoriler</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-area="Admin"
+                   asp-controller="Orders"
+                   asp-action="Index">
+                    📦 Siparişler
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-area="Admin"
+                   asp-controller="Fraud"
+                   asp-action="Heatmap">
+
+                    Fraud Heatmap
+
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-area="Admin"
+                   asp-controller="Fraud"
+                   asp-action="Metrics">
+
+                    Fraud Metrics
+
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-area="Admin"
+                   asp-controller="FraudRule"
+                   asp-action="Index">
+
+                    Fraud Rules
+
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-area="Admin"
+                   asp-controller="FraudSimulation"
+                   asp-action="Index">
+
+                    Fraud Simulator
+
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-area="Admin"
+                   asp-controller="FraudGraph"
+                   asp-action="User"
+                   asp-route-userId="test-user">
+
+                    Fraud Graph
+
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-area="Admin"
+                   asp-controller="User"
+                   asp-action="Index">
+                    👥 Kullanıcılar
+                </a>
+            </li>
+
+@*             <li class="nav-item">
+                <a class="nav-link" asp-area="Admin"
+                   asp-controller="Fraud"
+                   asp-action="Index">
+                    Fraud Dashboard
+                </a>
+            </li>
+ *@            <li class="nav-item">
+                <a asp-area="Admin"
+                   asp-controller="Dashboard"
+                   asp-action="Index"
+                   class="nav-link">
+                    📊 Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-area="Admin"
+                   asp-controller="Finance"
+                   asp-action="Index">
+                    📊 Finans Raporu
+                </a>
+            </li>
+            <li>
+
+                <a asp-area="Admin"
+                   asp-controller="FraudGraph"
+                   asp-action="Index"
+                   class="nav-link">
+
+                    Fraud Network
+                </a>
+            </li>
+
+
+            <li class="nav-item position-relative">
+                <a class="nav-link" href="/Cart">
+                    🛒
+                    <span id="cartCount"
+                          class="badge bg-danger position-absolute top-0 start-100 translate-middle d-none">
+                    </span>
+                </a>
+            </li>
+
+            @if (User.IsInRole("Admin") || User.IsInRole("Fraud"))
+            {
+                <li class="nav-item">
+                    <a class="nav-link" href="/Admin/Hangfire">
+                        <i class="bi bi-clock-history"></i>
+                        Jobs
+                    </a>
+                </li>
+            }
+
+
+
+        </ul>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a href="#"
+               class="dropdown-item text-danger"
+               onclick="document.getElementById('logoutForm').submit(); return false;">
+                🚪 Çıkış Yap
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Account"
+               asp-action="Login"
+               class="btn btn-primary">
+                Giriş Yap
+            </a>
+        }
+
+        @if (ViewBag.CancelCount > 0)
+        {
+            <span class="badge bg-danger ms-1">
+                @ViewBag.CancelCount
+            </span>
+@*             ViewBag.CancelCount = await _context.Orders
+            .CountAsync(o => o.CancelRequested);
+ *@
+        }
+
+
+</nav>
+

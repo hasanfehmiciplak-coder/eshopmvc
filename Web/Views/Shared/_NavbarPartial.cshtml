@@ -1,0 +1,256 @@
+﻿@using EShopMVC.Infrastructure.Data
+@using EShopMVC.Models
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (TempData["Error"] != null)
+{
+    <script>
+        toastr.warning("@TempData["Error"]");
+    </script>
+}
+
+@if (TempData["ToastSuccess"] != null)
+{
+    <script>
+        toastr.success('@TempData["ToastSuccess"]');
+    </script>
+}
+
+@if (TempData["ToastError"] != null)
+{
+    <script>
+        toastr.error('@TempData["ToastError"]');
+    </script>
+}
+
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+
+        <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+            E-Ticaret
+        </a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+
+            <!-- SOL -->
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">
+                        Anasayfa
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Product" asp-action="Index">
+                        Ürünler
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="/Cart"
+                       class="position-relative text-decoration-none me-3">
+
+                        🛒 Sepetim
+
+                        <span id="cartCount"
+                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            0
+                        </span>
+                    </a>
+                </li>
+
+@*                 @inject AppDbContext Db
+                @{
+                    var categories =Db.Categories
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.Name)
+                    .ToList();
+                }
+
+                @foreach (var cat in categories)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Products?CategoryId=@cat.Id">
+                            @cat.Name
+                        </a>
+                    </li>
+                }
+ *@
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-controller="Orders"
+                           asp-action="MyOrders">
+                            📦 Siparişlerim
+                        </a>
+                    </li>
+                }
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-semibold"
+                           asp-area="Admin"
+                           asp-controller="Dashboard"
+                           asp-action="Index">
+                            Admin Panel
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-area="Admin"
+                           asp-controller="Audit"
+                           asp-action="Index">
+                            🔍 Audit Log
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-area="Admin"
+                           asp-controller="PaymentLog"
+                           asp-action="Index">
+                            💳 Ödeme Logları
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-area="Admin"
+                           asp-controller="Security"
+                           asp-action="Index">
+                            🔐 Güvenlik
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-area="Admin"
+                           asp-controller="RefundFraud"
+                           asp-action="Index">
+                            🚨 Refund Fraud
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-area="Admin"
+                           asp-controller="Fraud"
+                           asp-action="Index">
+                            🚨 Fraud Flags
+                        </a>
+                    </li>
+
+                    <a class="nav-link" asp-area="Admin"
+                       asp-controller="Dashboard"
+                       asp-action="Index">
+                        📊 Dashboard
+                    </a>
+
+
+
+
+                }
+            </ul>
+            <ul class="dropdown-menu">
+                @await Component.InvokeAsync("CategoryMenu")
+            </ul>
+            <!-- SAĞ -->
+            <ul class="navbar-nav ms-auto">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    var user = await UserManager.GetUserAsync(User);
+                    var avatar = string.IsNullOrEmpty(user?.AvatarPath)
+                    ? "/images/default-avatar.png"
+                    : user.AvatarPath;
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center"
+                           href="#" data-bs-toggle="dropdown">
+
+                            <img src="@avatar"
+                                 class="rounded-circle me-2"
+                                 width="32"
+                                 height="32"
+                                 style="object-fit:cover;" />
+
+                            @user?.FullName
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end">
+
+                            <li class="dropdown-header text-muted small px-3">
+                                👋 Merhaba @user?.FullName
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item"
+                                   asp-controller="Account"
+                                   asp-action="Profile">
+
+                                    👤 Profilim
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item"
+                                   asp-controller="Orders"
+                                   asp-action="MyOrders">
+
+                                    📦 Siparişlerim
+                                </a>
+                            </li>
+
+                            <li><hr class="dropdown-divider" /></li>
+
+                            <!-- 🔒 CSRF TOKEN (tek tane) -->
+                            <li class="px-3">
+                                <form id="csrfForm">
+                                    @Html.AntiForgeryToken()
+                                </form>
+
+                                <!-- 🔘 TEK LOGOUT BUTONU -->
+                                <form asp-controller="Account"
+                                      asp-action="Logout"
+                                      method="post">
+
+                                    <button class="dropdown-item text-danger">
+                                        ⏻ Çıkış
+                                    </button>
+
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-controller="Account"
+                           asp-action="Login">
+                            Giriş Yap
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-controller="Account"
+                           asp-action="Register">
+                            Kayıt Ol
+                        </a>
+                    </li>
+                }
+            </ul>
+
+        </div>
+    </div>
+</nav>

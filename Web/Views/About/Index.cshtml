@@ -1,0 +1,23 @@
+﻿@model EShopMVC.Models.Firm
+
+<div class="container mt-4">
+    <h2>Hakkımızda</h2>
+
+    @if (Model != null)
+    {
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">@Model.Name</h4>
+@*                 <p class="card-text"><strong>Adres:</strong> @Model.Address</p>
+                <p class="card-text"><strong>Telefon:</strong> @Model.Phone</p>
+                <p class="card-text"><strong>E-posta:</strong> @Model.Email</p>
+ *@            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info mt-3">
+            Firma bilgileri henüz eklenmemiş.
+        </div>
+    }
+</div>

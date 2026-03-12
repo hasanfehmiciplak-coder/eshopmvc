@@ -1,0 +1,38 @@
+﻿
+<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Giriş Yap</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form id="loginForm" method="post">
+                <div class="modal-body">
+                    <div id="loginError"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input name="email" type="email" class="form-control" required placeholder="ör: mail@example.com" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Şifre</label>
+                        <input name="password" type="password" class="form-control" required placeholder="Şifreniz" />
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input name="rememberMe" type="checkbox" class="form-check-input" id="rememberMe">
+                        <label class="form-check-label" for="rememberMe">Beni Hatırla</label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

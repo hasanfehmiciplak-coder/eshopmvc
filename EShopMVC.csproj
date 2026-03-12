@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.1.1" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+    <PackageReference Include="Hangfire.Core" Version="1.8.23" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.23" />
+    <PackageReference Include="Humanizer" Version="2.14.1" />
+    <PackageReference Include="Iyzipay" Version="2.1.55" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.22" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.22" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.22">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.22" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.22">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ReportingServices.ReportViewerControl.WebForms" Version="150.1652.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.22" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="QuestPDF" Version="2025.7.4" />
+    <PackageReference Include="Rotativa.AspNetCore" Version="1.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Repositories\Doc\" />
+    <Folder Include="Web\Areas\Admin\Views\NewFolder\" />
+    <Folder Include="Web\ViewModels\Timeline\" />
+    <Folder Include="Modules\Catalog\Configurations\" />
+    <Folder Include="Modules\Catalog\Models\" />
+    <Folder Include="Modules\Catalog\Services\" />
+    <Folder Include="Modules\Fraud\Configurations\" />
+    <Folder Include="Modules\Fraud\Interfaces\" />
+    <Folder Include="Modules\Orders\Configurations\" />
+    <Folder Include="Modules\Payments\Configurations\" />
+    <Folder Include="Modules\Payments\Interfaces\" />
+    <Folder Include="Modules\Refunds\Configurations\" />
+    <Folder Include="Modules\Refunds\Models\" />
+    <Folder Include="Modules\Refunds\Repositories\" />
+    <Folder Include="Modules\Refunds\Services\" />
+    <Folder Include="Repositories\Fraud\" />
+    <Folder Include="Services\Fraud\" />
+    <Folder Include="Services\Interfaces\" />
+    <Folder Include="wwwroot\Rotativa\" />
+    <Folder Include="wwwroot\uploads\products\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Modules\Orders\Models\Cart.cs" />
+  </ItemGroup>
+
+</Project>

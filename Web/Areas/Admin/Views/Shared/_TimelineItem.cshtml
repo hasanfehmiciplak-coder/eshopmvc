@@ -1,0 +1,48 @@
+﻿@using EShopMVC.Areas.Admin.ViewModels.Orders
+@using EShopMVC.Models.TimeLine
+@model EShopMVC.Areas.Admin.ViewModels.Orders.TimelineItemVM
+
+@{
+    var severityClass = Model.Severity switch
+    {
+        TimelineSeverity.Success => "text-success",
+        TimelineSeverity.Warning => "text-warning",
+        TimelineSeverity.Danger => "text-danger",
+        _ => "text-secondary"
+    };
+}
+
+<div class="fw-bold @severityClass">
+    @Model.Title
+</div>
+
+<div class="timeline-item">
+
+    <div class="timeline-icon @Model.EffectiveIconCss">
+        <i class="@Model.EffectiveIcon"></i>
+    </div>
+
+    <div class="timeline-content">
+
+        <div class="fw-bold @severityClass">
+            @Model.Title
+        </div>
+
+        <div class="text-muted small">
+            @Model.Description
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Details))
+        {
+            <div class="small text-secondary">
+                @Model.Details
+            </div>
+        }
+
+        <div class="text-muted small">
+            @Model.Date.ToString("dd.MM.yyyy HH:mm")
+        </div>
+
+    </div>
+
+</div>

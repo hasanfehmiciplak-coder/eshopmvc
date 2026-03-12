@@ -1,0 +1,26 @@
+﻿@model dynamic
+
+<h2>Fraud IP Heatmap</h2>
+
+<table class="table table-striped">
+
+    <thead>
+        <tr>
+            <th>IP Address</th>
+            <th>Fraud Attempts</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Ip</td>
+                <td>@item.Count</td>
+            </tr>
+        }
+
+    </tbody>
+
+</table>

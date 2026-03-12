@@ -1,0 +1,28 @@
+﻿@model EShopMVC.Areas.Admin.ViewModels.FraudGraphVM
+
+<h2>Fraud Graph</h2>
+
+<h3>User</h3>
+<p>@Model.UserId</p>
+
+<h3>Orders</h3>
+
+<ul>
+    @foreach (var order in Model.Orders)
+    {
+        <li>Order #@order</li>
+    }
+</ul>
+
+<h3>IP Addresses</h3>
+
+<ul>
+    @foreach (var ip in Model.IpAddresses)
+    {
+        <li>@ip</li>
+    }
+</ul>
+
+<h3>Refund Count</h3>
+
+<p>@Model.RefundCount</p>

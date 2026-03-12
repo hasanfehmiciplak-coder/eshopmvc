@@ -1,0 +1,24 @@
+﻿@using EShopMVC.Web.ViewModels
+@model RegisterViewModel
+
+<form id="registerForm"
+      asp-action="Register"
+      asp-controller="Account"
+      method="post" data-auth-form>
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="UserName" value="" />
+
+    <input name="Email" class="form-control" placeholder="Email" />
+    <input  name="FullName" class="form-control" placeholder="Ad Soyad" />
+    <input id="registerPassword" name="Password" type="password" class="form-control" />
+    <input id="registerConfirmPassword" name="ConfirmPassword" type="password" class="form-control" />
+    <button id ="registerBtn" type="submit" class="btn btn-primary">Kayıt Ol</button>
+</form>
+
+<div id="registerError" class="text-danger mt-2"></div>
+
+@section Scripts {
+    <script src="~/js/auth.js"></script>
+}
+

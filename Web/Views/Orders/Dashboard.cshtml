@@ -1,0 +1,48 @@
+﻿@using EShopMVC.Web.ViewModels
+@model UserDashboardViewModel
+
+<h2>👋 Hoş geldin</h2>
+
+<div class="row g-3 mt-3">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h6>📦 Toplam Sipariş</h6>
+                <h3>@Model.TotalOrders</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h6>💰 Toplam Harcama</h6>
+                <h3>@Model.TotalSpent ₺</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h6>🕒 Son Sipariş</h6>
+
+                @if (Model.LastOrder != null)
+                {
+                    <span class="badge bg-info">
+                        @Model.LastOrder.Status
+                    </span>
+                    <p class="mt-2">
+                        @Model.LastOrder.CreatedDate.ToString("dd.MM.yyyy")
+                    </p>
+                }
+                else
+                {
+                    <span class="text-muted">Henüz sipariş yok</span>
+                }
+            </div>
+        </div>
+    </div>
+
+</div>

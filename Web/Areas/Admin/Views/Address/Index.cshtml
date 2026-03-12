@@ -1,0 +1,60 @@
+﻿@using EShopMVC.Modules.Orders.Models
+@model IEnumerable<CustomerAddress>
+
+<h4>Adreslerim</h4>
+
+
+<a asp-action="Create" class="btn btn-primary mb-3">➕ Yeni Adres</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Başlık</th>
+            <th>Adres</th>
+            <th>Telefon</th>
+            <th>Şehir</th>
+            <th>Varsayılan</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            @if (item.IsDefault)
+            {
+                <span class="badge bg-success">Varsayılan</span>
+                <p class="mb-1">
+                    📞 @item.Phone <br />
+                    📮 @item.PostalCode
+                </p>
+
+            }
+
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.FullAddress</td>
+                <td>@item.Phone</td>
+                <td>@item.City</td>
+                <td>
+                    @if (item.IsDefault)
+                    {
+                        <span class="badge bg-success">Evet</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-warning">
+                        Düzenle
+                    </a>
+
+                    <a asp-action="Delete"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-danger">
+                        Sil
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

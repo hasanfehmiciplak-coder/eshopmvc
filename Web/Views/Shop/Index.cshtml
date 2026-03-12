@@ -1,0 +1,25 @@
+﻿@using EShopMVC.Infrastructure.Data
+@using EShopMVC.Models
+@model List<Product>
+@inject AppDbContext _context
+
+@{
+    var categories = _context.Categories.ToList();
+}
+
+<h2>Ürünler</h2>
+
+
+
+<div class="mb-3">
+    <button class="btn btn-secondary filter-btn" data-id="0">Tüm Ürünler</button>
+    @foreach (var cat in categories)
+    {
+        <button class="btn btn-outline-primary filter-btn" data-id="@cat.Id">@cat.Name</button>
+    }
+</div>
+
+<div id="productList">
+    @await Html.PartialAsync("_ProductListPartial", Model)
+</div>
+

@@ -1,0 +1,29 @@
+﻿@using EShopMVC.Modules.Payments.Models
+@model PaymentLog
+
+<div>
+    <h6>💳 Ödeme Detayı</h6>
+
+    <p>
+        <strong>Tarih:</strong>
+        @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+    </p>
+
+    <p>
+        <strong>Durum:</strong>
+        <span class="badge @(Model.PaymentStatus == "SUCCESS" ? "bg-success" : "bg-danger")">
+            @Model.PaymentStatus
+        </span>
+    </p>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <p class="text-danger">
+            <strong>Hata:</strong> @Model.ErrorMessage
+        </p>
+    }
+
+    <small class="text-muted">
+        ConversationId: @Model.ConversationId
+    </small>
+</div>
