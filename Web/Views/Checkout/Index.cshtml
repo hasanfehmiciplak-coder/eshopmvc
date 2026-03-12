@@ -1,0 +1,27 @@
+﻿@using EShopMVC.Web.ViewModels
+@model CheckoutVM
+
+<h2>📦 Teslimat Bilgileri</h2>
+
+<form asp-controller="Checkout" asp-action="Index" method="post">
+
+    <div class="mb-3">
+        <label>Ad Soyad</label>
+        <input asp-for="FullName" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Telefon</label>
+        <input asp-for="Phone" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Adres</label>
+        <textarea asp-for="Address" class="form-control" required></textarea>
+    </div>
+
+    <button class="btn btn-success">
+        Siparişi Oluştur
+    </button>
+
+</form>

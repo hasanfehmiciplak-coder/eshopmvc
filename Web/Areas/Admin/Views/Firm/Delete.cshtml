@@ -1,0 +1,17 @@
+﻿@model EShopMVC.Models.Firm
+
+@{
+    ViewData["Title"] = "Firma Sil";
+}
+
+<h2>Firma Sil</h2>
+
+<div class="alert alert-danger">
+    <strong>@Model.Name</strong> adlı üretici firmayı silmek istiyor musunuz?
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>

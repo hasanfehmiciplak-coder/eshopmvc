@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Siparişiniz Alındı</title>
+</head>
+<body style="font-family: Arial; background:#f5f5f5; padding:20px;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="center">
+                <table width="600" style="background:#ffffff; padding:20px; border-radius:6px;">
+                    <tr>
+                        <td>
+                            <h2>🎉 Siparişiniz başarıyla alındı</h2>
+
+                            <p>Merhaba,</p>
+
+                            <p>
+                                <strong>Sipariş Numaranız:</strong> {{OrderId}}<br />
+                                <strong>Tutar:</strong> {{TotalPrice}} ₺<br />
+                                <strong>Tarih:</strong> {{OrderDate}}
+                            </p>
+
+                            <p>
+                                Siparişiniz işleme alınmıştır.
+                                Detayları hesabınızdan görüntüleyebilirsiniz.
+                            </p>
+
+                            <hr />
+
+                            <p style="font-size:12px; color:#777;">
+                                Bu mail otomatik olarak gönderilmiştir.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

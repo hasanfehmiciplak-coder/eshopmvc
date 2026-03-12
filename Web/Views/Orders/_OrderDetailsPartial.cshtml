@@ -1,0 +1,91 @@
+﻿@using EShopMVC.Modules.Orders
+@using EShopMVC.Modules.Orders.Models
+@model Order
+
+<div class="order-details">
+
+    <!-- HEADER -->
+    <div class="mb-3">
+        <h5>Sipariş #@Model.Id</h5>
+        <div class="text-muted small">
+            @Model.OrderDate.ToString("dd.MM.yyyy HH:mm")
+        </div>
+    </div>
+
+    <!-- CUSTOMER -->
+    <div class="mb-3">
+        <div><strong>Müşteri:</strong> @Model.CustomerName</div>
+        <div class="text-muted small">@Model.CustomerEmail</div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="mb-3">
+        <strong>Durum:</strong>
+        <span class="badge bg-secondary">
+            @Model.Status
+        </span>
+    </div>
+
+    <!-- STATUS UPDATE -->
+    <form asp-action="UpdateOrderStatus"
+          method="post"
+          class="order-status-form mb-4">
+
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        <div class="d-flex align-items-center gap-2">
+            <select name="status"
+                    class="form-select form-select-sm w-auto">
+
+                <option value="@OrderStatus.Pending"
+                        selected="@(Model.Status == OrderStatus.Pending)">
+                    Beklemede
+                </option>
+
+                <option value="@OrderStatus.Shipped"
+                        selected="@(Model.Status == OrderStatus.Shipped)">
+                    Kargoya Verildi
+                </option>
+
+                <option value="@OrderStatus.Completed"
+                        selected="@(Model.Status == OrderStatus.Completed)">
+                    Teslim Edildi
+                </option>
+
+                <option value="@OrderStatus.Approved"
+                        selected="@(Model.Status == OrderStatus.Approved)">
+                    Onaylandı
+                </option>
+
+                <option value="@OrderStatus.Rejected"
+                        selected="@(Model.Status == OrderStatus.Rejected)">
+                    Reddedildi
+                </option>
+            </select>
+
+            <button type="submit"
+                    class="btn btn-primary btn-sm">
+                Kaydet
+            </button>
+        </div>
+    </form>
+
+    <hr />
+
+    <!-- ITEMS -->
+    <h6>Ürünler</h6>
+    <ul class="mb-3">
+        @foreach (var item in Model.OrderItems)
+        {
+            <li>
+                @item.Product.Name —
+                @item.Quantity adet —
+                @item.Price ₺
+            </li>
+        }
+    </ul>
+
+    <div class="fw-bold">
+        Toplam: @Model.TotalPrice ₺
+    </div>
+</div>

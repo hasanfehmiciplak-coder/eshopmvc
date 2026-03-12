@@ -1,0 +1,26 @@
+﻿@using EShopMVC.Web.ViewModels
+@model ResendEmailConfirmationViewModel
+
+@{
+    ViewData["Title"] = "E-posta Doğrulama";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <h4 class="mb-3 text-center">📧 E-posta Doğrulama</h4>
+
+        <form method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                Doğrulama Mailini Tekrar Gönder
+            </button>
+        </form>
+    </div>
+</div>

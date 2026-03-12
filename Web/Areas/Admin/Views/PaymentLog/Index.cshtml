@@ -1,0 +1,77 @@
+﻿@using EShopMVC.Modules.Payments.Models
+@model List<PaymentLog>
+
+<h2>💳 Ödeme Logları</h2>
+
+<div class="mb-3">
+    <a asp-area="Admin"
+       asp-controller="PaymentLog"
+       asp-action="Index"
+       class="btn btn-outline-secondary">
+        Tümü
+    </a>
+
+    <a asp-area="Admin"
+       asp-controller="PaymentLog"
+       asp-action="Index"
+       asp-route-status="SUCCESS"
+       class="btn btn-outline-success ms-1">
+        Başarılı
+    </a>
+
+    <a asp-area="Admin"
+       asp-controller="PaymentLog"
+       asp-action="Index"
+       asp-route-status="FAILURE"
+       class="btn btn-outline-danger ms-1">
+        Başarısız
+    </a>
+</div>
+
+@if (ViewBag.StatusFilter != null)
+{
+    <div class="alert alert-info">
+        <strong>@ViewBag.StatusFilter</strong> durumuna göre filtrelenmiş loglar gösteriliyor.
+    </div>
+}
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Sipariş</th>
+            <th>Durum</th>
+            <th>Tarih</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var log in Model)
+        {
+            <tr>
+                <td>@log.Id</td>
+                <td>#@log.OrderId</td>
+                <td>
+                    @if (log.PaymentStatus == "SUCCESS")
+                    {
+                        <span class="badge bg-success">Başarılı</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Başarısız</span>
+                    }
+                </td>
+                <td>@log.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>
+                    <a asp-area="Admin"
+                       asp-controller="PaymentLog"
+                       asp-action="Detail"
+                       asp-route-id="@log.Id"
+                       class="btn btn-sm btn-primary">
+                        Detay
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

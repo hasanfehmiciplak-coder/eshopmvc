@@ -1,0 +1,30 @@
+﻿@model List<EShopMVC.Modules.Fraud.Models.FraudAlert>
+
+<h2>Fraud Alerts</h2>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Order</th>
+            <th>Risk</th>
+            <th>Message</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.OrderId</td>
+                <td>@a.RiskScore</td>
+                <td>@a.Message</td>
+                <td>@a.CreatedAt</td>
+            </tr>
+        }
+
+    </tbody>
+
+</table>

@@ -1,0 +1,76 @@
+﻿@using EShopMVC.Models
+@model IEnumerable<Category>
+
+@{
+    ViewData["Title"] = "Kategoriler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Kategoriler</h2>
+    <a asp-area="Admin" asp-action="Create" class="btn btn-primary">Yeni Kategori</a>
+</div>
+
+<table class="table">
+    @foreach (var item in Model)
+    {
+        <tr id="row-@item.Id">
+            <td>@item.Name</td>
+            <td>
+                <button class="btn btn-sm btn-primary editBtn" data-id="@item.Id">Düzenle</button>
+                <button class="btn btn-sm btn-danger deleteBtn" data-id="@item.Id">Sil</button>
+            </td>
+        </tr>
+    }
+</table>
+
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="editForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Kategori Düzenle</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editId" name="Id" />
+                    <div class="form-group">
+                        <label for="editName">Kategori Adı</label>
+                        <input type="text" id="editName" name="Name" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="deleteForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Kategori Sil</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="deleteId" name="Id" />
+                    <p>Bu kategoriyi silmek istediğinize emin misiniz?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hayır</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+

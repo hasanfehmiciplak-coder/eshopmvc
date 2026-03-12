@@ -1,0 +1,76 @@
+﻿<h2>Fraud Case - Order #@Model.Id</h2>
+
+<hr />
+
+<h4>Refunds</h4>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var r in ViewBag.Refunds)
+        {
+            <tr>
+                <td>@r.Reason</td>
+                <td>@r.Status</td>
+                <td>@r.CreatedAt</td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+
+<h4>Fraud Flags</h4>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Reason</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var f in ViewBag.FraudFlags)
+        {
+            <tr>
+                <td class="text-danger">@f.Reason</td>
+                <td>@f.CreatedAt</td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+
+<h4>Timeline</h4>
+
+<ul class="list-group">
+
+    @foreach (var t in ViewBag.Timeline)
+    {
+        <li class="list-group-item">
+
+            <strong>@t.EventType</strong>
+
+            <div class="text-muted small">
+                @t.Description
+            </div>
+
+            <div class="text-muted small">
+                @t.CreatedAt
+            </div>
+
+        </li>
+    }
+
+</ul>

@@ -1,0 +1,75 @@
+﻿@using EShopMVC.Areas.Admin.ViewModels.Admin
+@model FraudInvestigationVM
+
+<h3>Fraud Investigation</h3>
+
+<div class="alert @(Model.RiskScore >= 60 ? "alert-danger" : "alert-warning")">
+    Risk Score: <strong>@Model.RiskScore</strong>
+</div>
+
+<hr />
+
+<h4>Payment Attempts</h4>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Error</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model.PaymentAttempts)
+        {
+            <tr>
+                <td>@p.CreatedAt</td>
+                <td>@p.PaymentStatus</td>
+                <td>@p.ErrorMessage</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<a asp-area="Admin"
+   asp-controller="FraudCases"
+   asp-action="Create"
+   asp-route-orderId="@Model.Order.Id"
+   class="btn btn-danger">
+
+    Create Fraud Case
+</a>
+
+<h4>Refund History</h4>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model.Refunds)
+        {
+            <tr>
+                <td>@r.CreatedAt</td>
+                <td>@r.RefundAmount ₺</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h4>Fraud Flags</h4>
+
+@foreach (var f in Model.FraudFlags)
+{
+    <div class="alert alert-danger">
+        <strong>@f.RuleCode</strong><br />
+        @f.Description
+    </div>
+}

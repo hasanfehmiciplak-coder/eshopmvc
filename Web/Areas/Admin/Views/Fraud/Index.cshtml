@@ -1,0 +1,27 @@
+﻿@model List<EShopMVC.Modules.Fraud.Models.FraudFlag>
+
+<h2>Fraud Dashboard</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Order</th>
+            <th>Rule</th>
+            <th>Severity</th>
+            <th>Description</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var flag in Model)
+        {
+            <tr>
+                <td>@flag.OrderId</td>
+                <td>@flag.RuleCode</td>
+                <td>@flag.Severity</td>
+                <td>@flag.Description</td>
+                <td>@flag.CreatedAt</td>
+            </tr>
+        }
+    </tbody>
+</table>

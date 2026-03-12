@@ -1,0 +1,33 @@
+﻿@model List<EShopMVC.Modules.Fraud.Models.FraudRule>
+
+<h2>Fraud Rules</h2>
+
+<a asp-action="Create" class="btn btn-primary">Add Rule</a>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Threshold</th>
+            <th>Score</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Name</td>
+                <td>@r.RuleType</td>
+                <td>@r.Threshold</td>
+                <td>@r.RiskScore</td>
+                <td>@r.IsActive</td>
+            </tr>
+        }
+
+    </tbody>
+</table>

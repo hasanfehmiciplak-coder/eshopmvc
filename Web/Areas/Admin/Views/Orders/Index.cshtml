@@ -1,0 +1,255 @@
+﻿@using EShopMVC.Areas.Admin.ViewModels
+@using EShopMVC.Models.Fraud
+@using EShopMVC.Models
+@using EShopMVC.Modules.Orders.Models
+
+@model List<AdminOrderIndexVM>
+
+@if (ViewBag.SelectedSeverity != null)
+{
+    <span class="badge bg-info ms-2">
+        @ViewBag.SelectedSeverity Filter
+    </span>
+}
+
+@if (ViewBag.RiskFilter == "high")
+{
+    <div class="alert alert-danger">
+        <strong>High Risk Kullanıcılar</strong>
+        – bu kullanıcılara ait siparişler gösteriliyor.
+    </div>
+}
+
+<h2>Siparişler</h2>
+<form method="get" class="mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-auto">
+            <select name="severity" class="form-select"
+                    onchange="this.form.submit()">
+                <option value="">Tümü</option>
+                <option value="High"
+                        selected="@(ViewBag.SelectedSeverity?.ToString() == "High")">
+                    High Risk
+                </option>
+                <option value="Medium"
+                        selected="@(ViewBag.SelectedSeverity?.ToString() == "Medium")">
+                    Medium Risk
+                </option>
+                <option value="Low"
+                        selected="@(ViewBag.SelectedSeverity?.ToString() == "Low")">
+                    Low Risk
+                </option>
+            </select>
+        </div>
+    </div>
+</form>
+
+@{
+    var summary = ViewBag.FraudSummary;
+}
+
+@if (ViewBag.FraudAvgResolutionTime != null)
+{
+    var t = (TimeSpan)ViewBag.FraudAvgResolutionTime;
+
+    <div class="alert alert-info text-center mb-3">
+        ⏱ <strong>Ortalama Fraud Çözüm Süresi</strong>:
+        @($"{(int)t.TotalHours} saat {t.Minutes} dk")
+    </div>
+}
+else
+{
+    <div class="alert alert-light text-center mb-3">
+        ⏱ <strong>Ortalama Fraud Çözüm Süresi</strong>:
+        Henüz veri yok
+    </div>
+}
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <a asp-action="Index"
+           asp-route-fraud="high"
+           class="text-decoration-none">
+            <div class="alert alert-danger text-center">
+                <strong>🔴 High Fraud</strong><br />
+                <span class="fs-4">@summary.High</span>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-4">
+        <a asp-action="Index"
+           asp-route-fraud="medium"
+           class="text-decoration-none">
+            <div class="alert alert-warning text-center">
+                <strong>🟡 Medium Fraud</strong><br />
+                <span class="fs-4">@summary.Medium</span>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-4">
+        <a asp-action="Index"
+           asp-route-fraud="active"
+           class="text-decoration-none">
+            <div class="alert alert-secondary text-center">
+                <strong>⚪ Active Fraud</strong><br />
+                <span class="fs-4">@summary.Active</span>
+            </div>
+        </a>
+    </div>
+</div>
+
+@if (ViewBag.FraudFilter != null)
+{
+    <div class="mb-3">
+        <a asp-action="Index"
+           class="btn btn-sm btn-outline-secondary">
+            🔄 Filtreyi Temizle
+        </a>
+    </div>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Kullanıcı</th>
+            <th>Tarih</th>
+            <th>Tutar</th>
+            <th>Durum</th>
+            <th>Fraud</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>@order.Id</td>
+                <td>@order.UserEmail</td>
+                <td>@order.OrderDate</td>
+                <td>@order.TotalPrice ₺</td>
+
+                <!-- PAYMENT STATUS -->
+                <td>
+                    @if (order.Status == OrderStatus.Paid)
+                    {
+                        <span class="badge bg-success">Paid</span>
+                    }
+                    else if (order.Status == OrderStatus.Pending)
+                    {
+                        <span class="badge bg-secondary">Pending</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">
+                            @order.Status
+                        </span>
+                    }
+                </td>
+
+                <!-- FRAUD -->
+                <td>
+                    @if (order.MaxFraudSeverity.HasValue)
+                    {
+                        <span class="badge @GetSeverityClass(order.MaxFraudSeverity.Value)">
+                            @order.MaxFraudSeverity
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </td>
+                <td>
+                    @if (order.HasHighFraud && !order.RefundOverrideEnabled)
+                    {
+                        <button class="btn btn-sm btn-secondary" disabled>
+                            Refund
+                        </button>
+                    }
+                    else if (order.HasMediumFraud)
+                    {
+                        <button class="btn btn-sm btn-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#mediumFraudModal-@order.Id">
+                            Refund
+                        </button>
+
+                        <!-- MODAL -->
+                        <div class="modal fade"
+                             id="mediumFraudModal-@order.Id"
+                             tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-warning">
+                                        <h5 class="modal-title">
+                                            ⚠️ MEDIUM Fraud Onayı
+                                        </h5>
+                                        <button type="button"
+                                                class="btn-close"
+                                                data-bs-dismiss="modal"></button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <p>
+                                            Bu sipariş <b>MEDIUM Fraud</b> olarak işaretlenmiştir.
+                                        </p>
+                                        <p>
+                                            İade işlemini başlatmak istediğinize emin misiniz?
+                                        </p>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <a asp-action="CreatePartial"
+                                           asp-route-orderId="@order.Id"
+                                           class="btn btn-danger">
+                                            Evet, Devam Et
+                                        </a>
+
+                                        <button type="button"
+                                                class="btn btn-secondary"
+                                                data-bs-dismiss="modal">
+                                            Vazgeç
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-action="CreatePartial"
+                           asp-route-orderId="@order.Id"
+                           class="btn btn-sm btn-danger">
+                            Refund
+                        </a>
+                    }
+                </td>
+
+
+                <td>
+                    <a asp-action="Details"
+                       asp-route-id="@order.Id"
+                       class="btn btn-sm btn-primary">
+                        Detay
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@functions {
+    string GetSeverityClass(FraudSeverity severity)
+    {
+        return severity switch
+        {
+            FraudSeverity.High => "bg-danger",
+            FraudSeverity.Medium => "bg-warning text-dark",
+            FraudSeverity.Low => "bg-secondary",
+            _ => "bg-light"
+        };
+    }
+}

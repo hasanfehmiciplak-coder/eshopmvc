@@ -1,0 +1,69 @@
+﻿@model List<Order>
+@using EShopMVC.Models
+@using EShopMVC.Modules.Orders
+@using EShopMVC.Modules.Orders.Models
+<h3>Siparişlerim</h3>
+
+
+@if (!Model.Any())
+{
+    <div class="alert alert-secondary text-center">
+        <h5>📦 Henüz siparişiniz yok</h5>
+        <p>İlk siparişinizi vermek için ürünlere göz atın.</p>
+
+        <a asp-controller="Home"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+            Ürünleri Gör
+        </a>
+    </div>
+
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Tarih</th>
+                <th>Toplam</th>
+                <th>Durum</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var o in Model)
+            {
+                <tr>
+                    <td>@o.Id</td>
+                    <td>@o.OrderDate.ToString("dd.MM.yyyy")</td>
+                    <td>@o.TotalPrice ₺</td>
+                    <td>@o.Status</td>
+                    <td>
+                        <a asp-action="Detail"
+                           asp-route-id="@o.Id"
+                           class="btn btn-sm btn-outline-primary">
+                            Detay
+                        </a>
+
+                        @* 🔁 RETRY BUTONU *@
+                        @if (o.Status == OrderStatus.PaymentFailed)
+                        {
+                            <a asp-controller="Order"
+                               asp-action="RetryPayment"
+                               asp-route-id="@o.Id"
+                               class="btn btn-sm btn-warning ms-2">
+                                🔁 Tekrar Öde
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+}
+
+

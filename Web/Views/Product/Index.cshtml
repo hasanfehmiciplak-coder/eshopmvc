@@ -1,0 +1,122 @@
+﻿@using EShopMVC.Web.ViewModels
+@model ProductListVM
+
+
+<div class="row">
+    <!-- FİLTRE -->
+    <div class="col-md-3">
+        <form method="get">
+
+            <!-- 🔍 ARAMA (EKLENDİ) -->
+            <div class="mb-3">
+                <label>Ürün Ara</label>
+                <input asp-for="Search"
+                       class="form-control"
+                       placeholder="Ürün adı veya açıklama..." />
+            </div>
+
+            <div class="mb-3">
+                <label>Kategori</label>
+                <select asp-for="CategoryId" class="form-select">
+                    <option value="">Tümü</option>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <option value="@cat.Id">@cat.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label>Min Fiyat</label>
+                <input asp-for="MinPrice" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Max Fiyat</label>
+                <input asp-for="MaxPrice" class="form-control" />
+            </div>
+
+            <div class="form-check mb-3">
+                <input asp-for="InStock" class="form-check-input" />
+                <label class="form-check-label">Stokta Olanlar</label>
+            </div>
+            <div class="mb-3">
+                <label>Sırala</label>
+                <select asp-for="Sort" class="form-select">
+                    <option value="">En Yeni</option>
+                    <option value="price_asc">Fiyat (Artan)</option>
+                    <option value="price_desc">Fiyat (Azalan)</option>
+                    <option value="name">İsme Göre (A-Z)</option>
+                </select>
+            </div>
+
+
+            <button class="btn btn-primary w-100">Filtrele</button>
+        </form>
+    </div>
+
+    <!-- ÜRÜNLER -->
+    <div class="col-md-9">
+        <div class="row">
+            @foreach (var item in Model.Products)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@item.ImageUrl" class="card-img-top" />
+                        <div class="card-body">
+                            <h5>@item.Name</h5>
+                            <p class="text-muted">@item.Category.Name</p>
+                            <strong>@item.Price ₺</strong>
+                        </div>
+                        <div class="card-footer text-center">
+                            <button class="btn btn-sm btn-outline-primary"
+                                    onclick="openProductModal(@item.Id)">
+                                Detay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination justify-content-center">
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.Page ? "active" : "")">
+                    <a class="page-link"
+                       href="@Url.Action("Index", new {
+                           Page = i,
+                           Search = Model.Search,
+                           CategoryId = Model.CategoryId,
+                           MinPrice = Model.MinPrice,
+                           MaxPrice = Model.MaxPrice,
+                           InStock = Model.InStock,
+                           Sort = Model.Sort 
+                       })">
+                        @i
+                    </a>
+                </li>
+            }
+
+        </ul>
+    </nav>
+}
+
+
+<script src="~/js/product.js"></script>
+<script src="~/js/cart.js"></script>
+
+
+<div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="productModalContent">
+            <!-- AJAX ile dolacak -->
+        </div>
+    </div>
+</div>

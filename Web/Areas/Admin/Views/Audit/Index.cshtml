@@ -1,0 +1,139 @@
+﻿@model List<EShopMVC.Models.AuditLog>
+
+@{
+    ViewData["Title"] = "Audit Log";
+}
+
+<h2>🔍 Audit Log</h2>
+
+<div class="card mb-4">
+    <div class="card-header">
+        🔐 Son 7 Gün – Başarısız Giriş Denemeleri
+    </div>
+    <div class="card-body">
+        <canvas id="loginFailChart" height="100"></canvas>
+    </div>
+</div>
+<div class="card mb-4">
+    <div class="card-header">
+        📊 Son 7 Gün – Login Başarılı / Başarısız
+    </div>
+    <div class="card-body">
+        <canvas id="loginCompareChart" height="100"></canvas>
+    </div>
+</div>
+<div class="card mb-4">
+    <div class="card-header">
+        🌐 Son 7 Gün – En Çok Başarısız Giriş Yapan IP’ler
+    </div>
+    <div class="card-body">
+        <canvas id="loginFailByIpChart" height="120"></canvas>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        👤 Son 7 Gün – En Çok Başarısız Giriş Olan Kullanıcılar
+    </div>
+    <div class="card-body">
+        <canvas id="loginFailByUserChart" height="120"></canvas>
+    </div>
+</div>
+
+
+
+
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <select name="actionType" class="form-select">
+            <option value="">-- Tüm Aksiyonlar --</option>
+            <option value="LOGIN_SUCCESS" selected="@(ViewBag.ActionType == "LOGIN_SUCCESS")">Login Success</option>
+            <option value="LOGIN_FAIL" selected="@(ViewBag.ActionType == "LOGIN_FAIL")">Login Fail</option>
+            <option value="LOGIN_LOCKED" selected="@(ViewBag.ActionType == "LOGIN_LOCKED")">Login Locked</option>
+            <option value="REGISTER" selected="@(ViewBag.ActionType == "REGISTER")">Register</option>
+            <option value="RESET_PASSWORD" selected="@(ViewBag.ActionType == "RESET_PASSWORD")">Reset Password</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">Filtrele</button>
+    </div>
+
+    <div class="mb-3">
+        <a asp-action="ExportCsv"
+           asp-route-actionType="@ViewBag.ActionType"
+           asp-route-today="@(Context.Request.Query.ContainsKey("today"))"
+           class="btn btn-success btn-sm">
+            📤 CSV Olarak Dışa Aktar
+        </a>
+    </div>
+
+
+    <div class="col-md-2">
+        <a asp-action="Index"
+           asp-route-today="true"
+           class="btn btn-outline-secondary w-100">
+            Bugün
+        </a>
+    </div>
+</form>
+
+<div class="alert alert-warning">
+    Bugün başarısız giriş denemesi:
+    <strong>@ViewBag.LoginFailsToday</strong>
+</div>
+
+
+
+<table class="table table-bordered table-sm mt-3">
+    <thead class="table-light">
+        <tr>
+            <th>Tarih</th>
+            <th>Email</th>
+            <th>Aksiyon</th>
+            <th>IP</th>
+            <th>Tarayıcı</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var log in Model)
+        {
+            var badgeClass = log.Action switch
+            {
+                "LOGIN_SUCCESS" => "bg-success",
+                "LOGIN_FAIL" => "bg-danger",
+                "LOGIN_LOCKED" => "bg-warning text-dark",
+                "LOGOUT" => "bg-secondary",
+                "REGISTER" => "bg-info",
+                "EMAIL_CONFIRMED" => "bg-primary",
+                "FORGOT_PASSWORD" => "bg-dark",
+                "RESET_PASSWORD" => "bg-success",
+                _ => "bg-light text-dark"
+            };
+
+            var rowClass = log.Action == "LOGIN_FAIL"
+            ? "table-danger"
+            : "";
+
+            <tr class="@rowClass">
+                <td>@log.CreatedAt.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                <td>
+                    <a asp-action="User"
+                       asp-route-email="@log.Email">
+                        @log.Email
+                    </a>
+                </td>
+                <td>
+                    <span class="badge @badgeClass">
+                        @log.Action
+                    </span>
+                </td>
+                <td>@log.IpAddress</td>
+                <td style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    @log.UserAgent
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

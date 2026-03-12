@@ -1,0 +1,80 @@
+﻿@using EShopMVC.Web.ViewModels
+@model LoginViewModel
+
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <h3 class="mb-3 text-center">🔐 Giriş Yap</h3>
+
+        <form id="loginForm" method="post" asp-controller="Account" asp-action="Login">
+            @Html.AntiForgeryToken()
+
+            <!-- ReturnUrl (ÇOK ÖNEMLİ) -->
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" autocomplete="username" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password"
+                       type="password"
+                       class="form-control"
+                       autocomplete="current-password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-check mb-3">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label"></label>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="/Account/ResendEmailConfirmation">
+                    E-postanı doğrulamadın mı? Tekrar gönder
+                </a>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary w-100"
+                    id="loginBtn">
+                Giriş Yap
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $("#loginForm").on("submit", function (e) {
+            e.preventDefault();
+
+            const $btn = $("#loginBtn");
+            $btn.prop("disabled", true).text("Giriş yapılıyor...");
+
+            $.ajax({
+                url: "/Account/Login",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        window.location.href = res.redirectUrl;
+                    } else {
+                        toastr.error(res.message);
+                        $btn.prop("disabled", false).text("Giriş Yap");
+                    }
+                },
+                error: function () {
+                    toastr.error("Beklenmeyen bir hata oluştu");
+                    $btn.prop("disabled", false).text("Giriş Yap");
+                }
+            });
+        });
+    </script>
+}

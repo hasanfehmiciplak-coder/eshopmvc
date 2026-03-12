@@ -1,0 +1,35 @@
+﻿@model EShopMVC.Areas.Admin.ViewModels.FraudMetricsVM
+
+<h2>Fraud Metrics</h2>
+
+<div class="row">
+
+    <div class="col-md-3">
+        <div class="card p-3">
+            <h4>Total Alerts</h4>
+            <h2>@Model.TotalAlerts</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3">
+            <h4>Open Cases</h4>
+            <h2>@Model.OpenCases</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3">
+            <h4>High Risk Orders</h4>
+            <h2>@Model.HighRiskOrders</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3">
+            <h4>Refund Abuse Rate</h4>
+            <h2>@Model.RefundAbuseRate.ToString("0.0") %</h2>
+        </div>
+    </div>
+
+</div>

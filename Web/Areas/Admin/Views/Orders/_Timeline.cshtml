@@ -1,0 +1,155 @@
+﻿@using EShopMVC.Areas.Admin.ViewModels.Orders
+@using EShopMVC.Models.TimeLine
+@model IEnumerable<TimelineItemVM>
+
+<div class="btn-group mb-3" role="group" id="timelineFilters">
+    <button type="button" class="btn btn-outline-primary active" data-filter="All">
+        Tümü
+    </button>
+    <button type="button" class="btn btn-outline-success" data-filter="Payment">
+        Ödeme
+    </button>
+    <button type="button" class="btn btn-outline-warning" data-filter="Refund">
+        İade
+    </button>
+    <button type="button" class="btn btn-outline-danger" data-filter="Fraud">
+        Fraud
+    </button>
+    <button type="button" class="btn btn-outline-secondary" data-filter="System">
+        Sistem
+    </button>
+</div>
+@{
+    DateTime? lastDate = null;
+}
+<ul class="timeline">
+    @foreach (var item in Model)
+    {
+        var currentDate = item.Date.Date;
+
+        if (lastDate == null || lastDate.Value.Date != currentDate)
+        {
+            <div class="timeline-date-header my-3 text-center">
+                <span class="badge bg-light text-dark px-3 py-2">
+                    @currentDate.ToString("dd MMMM yyyy")
+                </span>
+            </div>
+
+            lastDate = currentDate;
+        }
+
+        var hasDetails =
+        !string.IsNullOrWhiteSpace(item.Description)
+        || !string.IsNullOrWhiteSpace(item.Details)
+        || !string.IsNullOrWhiteSpace(item.FraudDetails);
+
+        <div class="timeline-item d-flex mb-4"
+             data-group="@item.GroupKey">
+
+            <div class="timeline-icon @item.IconCss me-3">
+                <i class="@item.Icon"></i>
+            </div>
+
+            <div class="timeline-content w-100">
+                <h6 class="mb-1">
+                    @item.Title
+
+                    @if (item.RetryCount.HasValue)
+                    {
+                        <span class="badge bg-dark ms-2">
+                            Retry #@item.RetryCount
+                        </span>
+                    }
+                </h6>
+
+                <small class="text-muted d-block mb-1">
+                    @item.Date.ToString("HH:mm")
+                    · @item.PerformedBy
+                </small>
+
+                @if (hasDetails)
+                {
+                    <a href="javascript:void(0)"
+                       class="timeline-toggle text-decoration-none small text-primary"
+                       data-toggle>
+                        Detayları göster
+                    </a>
+
+                    <div class="timeline-details mt-2 d-none">
+                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <p class="mb-1">@item.Description</p>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(item.Details))
+                        {
+                            <small class="text-muted d-block">@item.Details</small>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(item.FraudDetails))
+                        {
+                            <span class="badge bg-danger mt-1">
+                                @item.FraudDetails
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</ul>
+
+<div class="order-timeline">
+    @foreach (var item in Model.OrderByDescending(x => x.Date))
+    {
+        @await Html.PartialAsync("_TimelineItem", item)
+    }
+</div>
+
+<script>
+    (function () {
+        const filterContainer = document.getElementById('timelineFilters');
+        if (!filterContainer) return;
+
+        filterContainer.querySelectorAll('[data-filter]').forEach(btn => {
+            btn.addEventListener('click', function () {
+
+                // aktif buton
+                filterContainer.querySelectorAll('.btn')
+                    .forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const filter = this.getAttribute('data-filter');
+
+                document.querySelectorAll('.timeline-item').forEach(item => {
+                    if (filter === 'All' || item.dataset.group === filter) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    })();
+
+
+    (function () {
+        document.querySelectorAll('[data-toggle]').forEach(toggle => {
+            toggle.addEventListener('click', function () {
+
+                const details = this.nextElementSibling;
+                if (!details) return;
+
+                const isOpen = !details.classList.contains('d-none');
+
+                details.classList.toggle('d-none');
+
+                this.textContent = isOpen
+                    ? 'Detayları göster'
+                    : 'Detayları gizle';
+            });
+        });
+    })();
+</script>
+
+

@@ -1,0 +1,122 @@
+﻿@using EShopMVC.Modules.Payments.Models
+@model List<PartialRefund>
+
+@{
+    const int RefundApprovalHourLimit = 24;
+}
+
+<h3>⏳ Onay Bekleyen İade Talepleri</h3>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Sipariş</th>
+            <th>Ürün</th>
+            <th>Adet</th>
+            <th>Tutar</th>
+            <th>Neden</th>
+            <th>İşlem</th>
+            <th>Süre</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            var logs = r.RefundLogs ?? new List<RefundLog>();
+
+            var failedLogs = logs
+            .Where(x => x.Status == RefundStatus.Failed)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToList();
+
+            var canRetry =
+            failedLogs.Any() &&
+            failedLogs.Count < 3 &&
+            (DateTime.Now - failedLogs.First().CreatedAt).TotalMinutes >= 10;
+
+            var approvalRemaining =
+            RefundApprovalHourLimit -
+            (DateTime.Now - r.CreatedAt).TotalHours;
+
+            var canApproveReject = approvalRemaining > 0;
+
+            <tr>
+                <td>#@r.OrderId</td>
+                <td>@r.OrderItem.Product.Name</td>
+                <td>@r.Quantity</td>
+                <td class="text-danger">@r.RefundAmount ₺</td>
+                <td>@r.Reason</td>
+                <td>
+                    @if (canApproveReject)
+                    {
+                        <form asp-action="Approve" asp-route-id="@r.Id" method="post" class="d-inline">
+                            <button class="btn btn-success btn-sm">Onayla</button>
+                        </form>
+                        <form asp-action="Reject" asp-route-id="@r.Id" method="post" class="d-inline">
+                            <button class="btn btn-danger btn-sm">Reddet</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            Onay süresi doldu
+                        </span>
+                    }
+
+                    @if (canRetry)
+                    {
+                        <form asp-action="RetryRefund"
+                              asp-route-refundId="@r.Id"
+                              method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('İadeyi tekrar denemek istiyor musunuz?');">
+                            <button class="btn btn-warning btn-sm">
+                                🔁 Tekrar Dene
+                            </button>
+                        </form>
+                    }
+                    <a asp-action="AuditTrail"
+                       asp-route-refundId="@r.Id"
+                       class="btn btn-outline-info btn-sm">
+                        🧾 Loglar
+                    </a>
+
+                </td>
+                <td>
+                    @{
+                        var remainingHours =
+                        RefundApprovalHourLimit -
+                        (DateTime.Now - r.CreatedAt).TotalHours;
+                    }
+
+                    @if (remainingHours > 0)
+                    {
+                        <span class="text-success">
+                            @Math.Floor(remainingHours) saat
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-danger">Süre doldu</span>
+                    }
+                </td>
+            </tr>
+
+            @if (!canRetry && failedLogs.Any())
+            {
+                <tr>
+                    <td colspan="7">
+                        @if (failedLogs.Count >= 3)
+                        {
+                            <span class="badge bg-danger">Maks. deneme aşıldı</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Bekleme süresi dolmadı</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

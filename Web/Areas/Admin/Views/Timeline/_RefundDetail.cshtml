@@ -1,0 +1,23 @@
+﻿@using EShopMVC.Modules.Payments.Models
+@model PartialRefund
+
+<div>
+    <h6>↩️ İade Detayı</h6>
+
+    <p>
+        <strong>Tarih:</strong>
+        @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+    </p>
+
+    <p>
+        <strong>Tutar:</strong>
+        <span class="text-danger">
+            @Model.RefundAmount.ToString("C")
+        </span>
+    </p>
+
+    <p>
+        <strong>Neden:</strong>
+        @Model.Reason
+    </p>
+</div>

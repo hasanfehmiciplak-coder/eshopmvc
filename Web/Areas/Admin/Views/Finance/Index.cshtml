@@ -1,0 +1,116 @@
+﻿<h2>📊 Finans Raporu</h2>
+
+<div class="row mb-4">
+
+    <div class="col-md-3">
+        <div class="card p-3 shadow-sm">
+            <h6>Toplam Ciro</h6>
+            <h4>@ViewBag.TotalRevenue ₺</h4>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3 shadow-sm">
+            <h6>Toplam İade</h6>
+            <h4 class="text-danger">@ViewBag.TotalRefund ₺</h4>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3 shadow-sm">
+            <h6>Net Gelir</h6>
+            <h4 class="text-success">@ViewBag.NetRevenue ₺</h4>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3 shadow-sm">
+            <h6>Toplam Sipariş</h6>
+            <h4>@ViewBag.OrderCount</h4>
+        </div>
+    </div>
+    <a asp-area="Admin"
+       asp-controller="Finance"
+       asp-action="ExportCsv"
+       class="btn btn-outline-primary mb-3">
+        ⬇️ CSV Olarak İndir
+    </a>
+    <a asp-area="Admin"
+       asp-controller="Finance"
+       asp-action="ExportExcel"
+       class="btn btn-outline-success mb-3">
+        ⬇️ Excel (.xlsx) İndir
+    </a>
+
+
+</div>
+
+<hr />
+<h4>📈 Günlük Ciro Grafiği</h4>
+
+<canvas id="dailyRevenueChart" height="100"></canvas>
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Tutar</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in ViewBag.DailyReport)
+        {
+            <tr>
+                <td>@item.Date.ToString("dd.MM.yyyy")</td>
+                <td>@item.Total ₺</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@section Scripts {
+
+    <script>
+        const labels = [
+            @foreach (var item in ViewBag.DailyReport)
+            {
+                    @Html.Raw($"'{item.Date.ToString("dd.MM")}',")
+            }
+        ];
+
+        const data = [
+            @foreach (var item in ViewBag.DailyReport)
+            {
+                    @Html.Raw($"{item.Total},")
+            }
+        ];
+
+        const ctx = document.getElementById('dailyRevenueChart');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels.reverse(),
+                datasets: [{
+                    label: 'Günlük Ciro (₺)',
+                    data: data.reverse(),
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+}

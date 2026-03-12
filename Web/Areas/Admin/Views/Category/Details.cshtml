@@ -1,0 +1,17 @@
+﻿@using EShopMVC.Models
+@model Category
+
+@{
+    ViewData["Title"] = "Details Category";
+}
+
+
+<div class="container mt-4">
+    <h2>Category Details</h2>
+    <dl class="row mt-3">
+        <dt class="col-sm-2">Name</dt>
+        <dd class="col-sm-10">@Model.Name</dd>
+    </dl>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>

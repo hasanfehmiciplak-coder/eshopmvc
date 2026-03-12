@@ -1,0 +1,25 @@
+﻿@using EShopMVC.Models
+@model Product
+
+<h3>❗ Ürün Silinecek</h3>
+
+<div class="alert alert-danger">
+    <strong>@Model.Name</strong> ürünü silinecek. Emin misiniz?
+</div>
+
+<img src="@Model.ImageUrl"
+     width="150"
+     class="img-thumbnail mb-3" />
+
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <button type="submit" class="btn btn-danger">
+        Evet, Sil
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Vazgeç
+    </a>
+</form>

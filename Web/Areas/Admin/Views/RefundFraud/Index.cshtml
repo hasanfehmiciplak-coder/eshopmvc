@@ -1,0 +1,82 @@
+﻿<h2>🚨 Refund Fraud Dashboard</h2>
+
+<hr />
+
+<h4>👤 En Çok İade Yapan Kullanıcılar</h4>
+
+<div class="row mb-4">
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                📈 Günlük İade Sayısı
+            </div>
+            <div class="card-body">
+                <canvas id="refundCountChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                💰 Günlük İade Tutarı
+            </div>
+            <div class="card-body">
+                <canvas id="refundAmountChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="alert alert-info">
+    Toplam Ödeme: <strong id="totalPaid"></strong> ₺ |
+    Toplam İade: <strong id="totalRefunded"></strong> ₺ |
+    İade Oranı: <strong id="refundRatio"></strong> %
+</div>
+
+
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>İade Sayısı</th>
+            <th>Toplam İade</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in ViewBag.TopRefundUsers)
+        {
+            <tr class="@(u.Count >= 3 ? "table-danger" : "")">
+                <td>@u.Email</td>
+                <td>@u.Count</td>
+                <td>@u.Total ₺</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h4>📦 Çoklu İade Yapılan Siparişler</h4>
+
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Sipariş ID</th>
+            <th>İade Sayısı</th>
+            <th>Toplam İade</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in ViewBag.RiskyOrders)
+        {
+            <tr class="@(o.RefundCount >= 2 ? "table-warning" : "")">
+                <td>#@o.OrderId</td>
+                <td>@o.RefundCount</td>
+                <td>@o.RefundTotal ₺</td>
+            </tr>
+        }
+    </tbody>
+</table>

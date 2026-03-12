@@ -1,0 +1,46 @@
+﻿@model EShopMVC.Areas.Admin.ViewModels.FraudSimulationVM
+
+<h2>Fraud Simulation Tool</h2>
+
+<form method="post">
+
+    <div class="form-group">
+        <label>Order Amount</label>
+        <input asp-for="OrderAmount" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Refund Count</label>
+        <input asp-for="RefundCount" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>IP Address</label>
+        <input asp-for="IpAddress" class="form-control" />
+    </div>
+
+    <br />
+
+    <button class="btn btn-primary">Simulate</button>
+
+</form>
+
+@if (Model.RiskScore > 0)
+{
+    <hr />
+
+    <h3>Result</h3>
+
+    <p><strong>Risk Score:</strong> @Model.RiskScore</p>
+
+    <h4>Triggered Rules</h4>
+
+    <ul>
+
+        @foreach (var rule in Model.TriggeredRules)
+        {
+            <li>@rule</li>
+        }
+
+    </ul>
+}

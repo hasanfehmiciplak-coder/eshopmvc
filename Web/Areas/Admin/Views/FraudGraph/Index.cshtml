@@ -1,0 +1,41 @@
+﻿@model dynamic
+
+<h3>Fraud Network Graph</h3>
+
+<div id="graph"></div>
+
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+<script>
+
+    var data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+
+    var nodes = [];
+    var edges = [];
+
+    data.forEach(x => {
+
+        nodes.push({ id: "user_" + x.User, label: x.User, color: "#4CAF50" });
+
+        nodes.push({ id: "order_" + x.Order, label: "Order " + x.Order, color: "#2196F3" });
+
+        nodes.push({ id: "ip_" + x.Ip, label: x.Ip, color: "#F44336" });
+
+        edges.push({ from: "user_" + x.User, to: "order_" + x.Order });
+
+        edges.push({ from: "order_" + x.Order, to: "ip_" + x.Ip });
+
+    });
+
+    var container = document.getElementById("graph");
+
+    var network = new vis.Network(
+        container,
+        {
+            nodes: nodes,
+            edges: edges
+        },
+        {}
+    );
+
+</script>

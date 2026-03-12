@@ -1,0 +1,118 @@
+﻿@using EShopMVC.Models
+@model Product
+
+<h3>@Model.Name</h3>
+
+@if (Model.Stock <= 5 && Model.Stock > 0)
+{
+    <span class="badge bg-warning text-dark">
+        Son @Model.Stock adet!
+    </span>
+}
+@{
+    var mainImage = Model.Images.FirstOrDefault(x => x.IsMain)
+        ?? Model.Images.FirstOrDefault();
+}
+
+
+<div class="row">
+    <div class="mb-3">
+        <img id="mainImage"
+             src="@mainImage?.ImageUrl"
+             class="img-fluid border"
+             alt="@Model.Name" />
+    </div>
+
+    <div class="mt-3">
+        <input type="number"
+               id="qty"
+               value="1"
+               min="1"
+               max="@Model.Stock"
+               class="form-control w-25 d-inline" />
+
+        <button class="btn btn-success add-to-cart"
+                data-id="@Model.Id">
+            Sepete Ekle
+        </button>
+    </div>
+
+    <div id="cartMessage" class="mt-2"></div>
+
+ @if (Model.Images.Count > 1)
+    {
+        <div class="d-flex gap-2">
+            @foreach (var img in Model.Images)
+            {
+                <img src="@img.ImageUrl"
+                     class="img-thumbnail thumb-img"
+                     style="width:80px; cursor:pointer"
+                     onclick="changeImage('@img.ImageUrl')" />
+            }
+        </div>
+    }
+
+</div>
+@if (ViewBag.RelatedProducts != null &&
+    ((List<Product>)ViewBag.RelatedProducts).Any())
+{
+    <hr />
+    <h4>Benzer Ürünler</h4>
+
+    <div class="row">
+        @foreach (var p in (List<Product>)ViewBag.RelatedProducts)
+        {
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <img src="@p.ImageUrl"
+                         class="card-img-top"
+                         alt="@p.Name" />
+
+                    <div class="card-body">
+                        <h6 class="card-title">@p.Name</h6>
+                        <p class="text-success">@p.Price ₺</p>
+
+                        <a asp-controller="Product"
+                           asp-action="Detail"
+                           asp-route-id="@p.Id"
+                           class="btn btn-sm btn-outline-primary">
+                            İncele
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+<script>
+    function changeImage(url) {
+        document.getElementById("mainImage").src = url;
+    }
+
+    function addToCart(productId) {
+        const qty = document.getElementById("qty").value;
+
+        fetch('/Cart/Add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `productId=${productId}&quantity=${qty}`
+        })
+    .then(data => {
+        const msg = document.getElementById("cartMessage");
+
+        if (data.success) {
+            msg.innerHTML =
+                `<div class="alert alert-success">${data.message}</div>`;
+                document.getElementById("cartCount").innerText = data.count;
+            // 🔔 ileride mini cart için kullanılacak
+            console.log("Sepet adedi:", data.count);
+        } else {
+            msg.innerHTML =
+                `<div class="alert alert-danger">${data.message}</div>`;
+        }
+    });
+        }
+
+</script>

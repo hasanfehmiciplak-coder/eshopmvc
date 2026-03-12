@@ -1,0 +1,549 @@
+﻿@using System.Linq
+@using EShopMVC.Areas.Admin.ViewModels.Orders
+@using EShopMVC.Models.Fraud
+@using EShopMVC.Models
+@using Iyzipay.Model
+@model OrderDetailViewModel
+
+<h3>📦 Sipariş Detayı (#@Model.Order.Id)</h3>
+
+
+
+@if (Model.Order.RefundOverrideEnabled)
+{
+    <div class="alert alert-warning">
+        <strong>⚠️ Fraud Override Aktif</strong><br />
+        <b>Not:</b> @Model.Order.RefundOverrideNote <br />
+        <b>Tarih:</b> @Model.Order.RefundOverrideAt?.ToString("dd.MM.yyyy HH:mm")
+    </div>
+}
+
+@if (Model.Order.RefundOverrideEnabled)
+{
+    <form asp-action="DisableRefundOverride"
+          method="post"
+          class="mt-2">
+        <input type="hidden" name="orderId" value="@Model.Order.Id" />
+
+        <div class="input-group">
+            <input type="text"
+                   name="note"
+                   class="form-control"
+                   placeholder="Override kapatma notu"
+                   required />
+            <button class="btn btn-danger">
+                Override Kapat
+            </button>
+        </div>
+    </form>
+}
+
+<div class="mb-3">
+    <p><strong>Kullanıcı:</strong> @Model.Order.User.Email</p>
+    <p><strong>Adres:</strong> @Model.Order.Address</p>
+    <p><strong>Tarih:</strong> @Model.Order.OrderDate</p>
+    <p><strong>Durum:</strong> @Model.Order.Status</p>
+    <p><strong>Ödendi mi:</strong> @(Model.Order.IsPaid ? "Evet" : "Hayır")</p>
+</div>
+
+<div class="alert @(ViewBag.RiskScore >= 60 ? "alert-danger" :
+                        ViewBag.RiskScore >= 30 ? "alert-warning" :
+                        "alert-success")">
+
+    Risk Score: <strong>@ViewBag.RiskScore</strong>
+
+</div>
+
+<hr />
+
+<!-- ================= ÜRÜNLER ================= -->
+
+<h5>🛒 Ürünler</h5>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Ürün</th>
+            <th>Fiyat</th>
+            <th>Adet</th>
+            <th>Toplam</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Order.OrderItems)
+        {
+            <tr>
+                <td>@item.Product.Name</td>
+                <td>@item.Price ₺</td>
+                <td>@item.Quantity</td>
+                <td>@(item.Price* item.Quantity) ₺</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<!-- ================= KISMİ İADE ================= -->
+<h5 class="text-warning">🔄 Kısmi İade</h5>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Ürün</th>
+            <th>Toplam Adet</th>
+            <th>İade Edilen</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Order.OrderItems)
+        {
+            var refundable = item.Quantity - item.RefundedQuantity;
+
+            <tr>
+                <td>@item.Product.Name</td>
+                <td>@item.Quantity</td>
+                <td>@item.RefundedQuantity</td>
+                <td>
+                    @if (refundable > 0)
+                    {
+                        <form asp-area="Admin"
+                              asp-controller="Orders"
+                              asp-action="CreatePartialRefund"
+                              method="post"
+                              class="d-flex gap-2">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="orderItemId" value="@item.Id" />
+
+                            <input type="number"
+                                   name="quantity"
+                                   min="1"
+                                   max="@refundable"
+                                   value="1"
+                                   class="form-control form-control-sm"
+                                   style="width:80px" />
+
+                            <button class="btn btn-sm btn-warning">
+                                İade Et
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted">İade yok</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+<!-- ================= İADE GEÇMİŞİ ================= -->
+@if (Model.Order.PartialRefunds != null && Model.Order.PartialRefunds.Count > 0)
+{
+    <h5 class="text-danger">↩️ İade Geçmişi</h5>
+
+    <table class="table table-bordered table-sm">
+        <thead>
+            <tr>
+                <th>Ürün</th>
+                <th>Adet</th>
+                <th>Tutar</th>
+                <th>Tarih</th>
+                <th>İşlem</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var refund in Model.Order.PartialRefunds)
+            {
+                var orderItem = Model.Order.OrderItems
+                .FirstOrDefault(oi => oi.Id == refund.OrderItemId);
+
+                var canUndo =
+                User.IsInRole("Admin") &&
+                refund.Status == RefundStatus.Completed &&
+                (DateTime.UtcNow - refund.CreatedAt).TotalHours <= 24;
+
+                <tr class="@(refund.Status == RefundStatus.Cancelled ? "table-secondary" : "")">
+
+                    <td>@orderItem?.Product?.Name</td>
+                    <td>@refund.Quantity</td>
+                    <td class="text-danger">@refund.RefundAmount ₺</td>
+                    <td>@refund.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        @* ✅ GERİ AL *@
+                        @if (canUndo)
+                        {
+                            <form asp-area="Admin"
+                                  asp-controller="Orders"
+                                  asp-action="UndoRefund"
+                                  method="post"
+                                  onsubmit="return confirm('Bu iadeyi geri almak istiyor musunuz?');"
+                                  class="d-inline">
+
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="refundId" value="@refund.Id" />
+
+                                <button class="btn btn-sm btn-warning">
+                                    ↩️ Geri Al
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            @* ❌ GERİ ALINAMAZ SEBEPLERİ *@
+                            if (refund.Status == RefundStatus.Cancelled)
+                            {
+                                <span class="badge bg-secondary">
+                                    Geri alındı
+                                </span>
+                            }
+                            else if (refund.Status != RefundStatus.Completed)
+                            {
+                                <span class="text-muted">
+                                    Onaylanmamış
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">
+                                    Süre doldu
+                                </span>
+                            }
+                        }
+                    </td>
+                </tr>
+                
+            }
+        </tbody>
+    </table>
+
+    <hr />
+}
+
+<!-- ================= FRAUD ================= -->
+@if (Model.FraudFlags.Any())
+{
+    <h5>🚨 Fraud Flags</h5>
+
+    @foreach (var fraud in Model.FraudFlags)
+    {
+        <div class="card mb-2 border-danger">
+            <div class="card-body">
+                <strong>
+                    ⚠️ @(fraud.RuleCode switch
+                    {
+                        "PAYMENT_RETRY_LIMIT" => "Çok Fazla Ödeme Denemesi",
+                        "MANUAL_REVIEW" => "Manuel İnceleme",
+                        "REFUND_ABUSE" => "Şüpheli İade Aktivitesi",
+                        _ => fraud.RuleCode
+                    })
+        </strong> 
+        <span class="badge bg-@(
+              fraud.CaseStatus == FraudCaseStatus.Open ? "danger" :
+              fraud.CaseStatus == FraudCaseStatus.Investigating ? "warning" :
+              fraud.CaseStatus == FraudCaseStatus.Resolved ? "success" :
+              "secondary")">
+
+            @fraud.CaseStatus
+
+                </span>
+        
+        <span class="badge bg-@(fraud.Severity == FraudSeverity.High ? "danger" :
+                                                              fraud.Severity == FraudSeverity.Medium ? "warning" : "secondary")">
+            @fraud.Severity
+        </span>
+
+                <p class="mb-1">@fraud.Description</p>
+
+                <a asp-area="Admin"
+                   asp-controller="Fraud"
+                   asp-action="Investigation"
+                   asp-route-orderId="@Model.Order.Id"
+                   class="btn btn-sm btn-danger">
+
+                    Investigate
+                </a>
+
+                <form asp-action="UpdateFraudCaseStatus" method="post">
+
+                    <input type="hidden" name="id" value="@fraud.Id" />
+
+                    <select name="status"
+                            class="form-select form-select-sm mt-2">
+
+                        <option value="Open"
+                                selected="@(fraud.CaseStatus == FraudCaseStatus.Open)">
+                            Open
+                        </option>
+
+                        <option value="Investigating"
+                                selected="@(fraud.CaseStatus == FraudCaseStatus.Investigating)">
+                            Investigating
+                        </option>
+
+                        <option value="Resolved"
+                                selected="@(fraud.CaseStatus == FraudCaseStatus.Resolved)">
+                            Resolved
+                        </option>
+
+                        <option value="FalsePositive"
+                                selected="@(fraud.CaseStatus == FraudCaseStatus.FalsePositive)">
+                            False Positive
+                        </option>
+
+                    </select>
+
+                    <button class="btn btn-sm btn-primary mt-2">
+                        Update
+                    </button>
+
+                </form>
+
+        @if (fraud.IsResolved)
+                {
+                    <div class="mt-2">
+                        <span class="badge bg-success">✔ Resolved</span>
+
+                        <div class="small text-muted mt-1">
+                            <div>
+                                🕒 @fraud.ResolvedAt?.ToString("dd.MM.yyyy HH:mm")
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(fraud.ResolutionNote))
+                            {
+                                <div>
+                                    🧾 <b>Not:</b> @fraud.ResolutionNote
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(fraud.ResolvedByUserEmail))
+                            {
+                                <div>
+                                    👤 <b>Çözen:</b> @fraud.ResolvedByUserEmail
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <form asp-action="UpdateFraudCaseStatus" method="post">
+
+                <input type="hidden" name="id" value="@fraud.Id" />
+
+                <select name="status"
+                        class="form-select form-select-sm mt-2">
+
+                    <option value="Open"
+                            selected="@(fraud.CaseStatus == FraudCaseStatus.Open)">
+                        Open
+                    </option>
+
+                    <option value="Investigating"
+                            selected="@(fraud.CaseStatus == FraudCaseStatus.Investigating)">
+                        Investigating
+                    </option>
+
+                    <option value="Resolved"
+                            selected="@(fraud.CaseStatus == FraudCaseStatus.Resolved)">
+                        Resolved
+                    </option>
+
+                    <option value="FalsePositive"
+                            selected="@(fraud.CaseStatus == FraudCaseStatus.FalsePositive)">
+                        False Positive
+                    </option>
+
+                </select>
+
+                <button class="btn btn-sm btn-primary mt-2">
+                    Update
+                </button>
+
+            </form>
+        </div>
+    }
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+            Payment Attempts
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-sm">
+
+                <thead>
+                    <tr>
+                        <th>Transaction</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var log in Model.Order.PaymentLogs)
+                    {
+                        <tr>
+
+                            <td>@log.PaymentTransactionId</td>
+
+                            <td>
+
+                                @if (log.PaymentStatus == "SUCCESS")
+                                {
+                                    <span class="badge bg-success">Success</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Failed</span>
+                                }
+
+                            </td>
+
+                            <td>@log.PaidAmount ₺</td>
+
+                            <td>@log.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+            Refund History
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-sm">
+
+                <thead>
+                    <tr>
+                        <th>Refund</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var refund in Model.Order.PartialRefunds)
+                    {
+                        <tr>
+
+                            <td>#@refund.Id</td>
+
+                            <td>@refund.RefundAmount ₺</td>
+
+                            <td>@refund.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+}
+
+<div class="mb-3">
+    <span class="badge bg-secondary">
+        Deneme: @Model.PaymentAttemptCount
+    </span>
+
+    <span class="badge bg-success">
+        Başarılı: @Model.SuccessfulPaymentCount
+    </span>
+
+    <span class="badge bg-danger">
+        Başarısız: @Model.FailedPaymentCount
+    </span>
+</div>
+
+@{
+    var prob = ViewBag.FraudProbability;
+}
+
+<div class="alert @(prob >= 0.7 ? "alert-danger" :
+                        prob >= 0.4 ? "alert-warning" :
+                        "alert-success")">
+
+    Fraud Probability:
+    <strong>@((prob * 100).ToString("0"))%</strong>
+
+</div>
+
+<div class="alert @(ViewBag.RiskScore >= 60 ? "alert-danger" :
+                        ViewBag.RiskScore >= 30 ? "alert-warning" :
+                        "alert-success")">
+
+    <strong>Risk Score:</strong> @ViewBag.RiskScore
+
+
+    <div class="card mt-3">
+        <div class="card-body">
+
+            <h6>Risk Score</h6>
+
+            <div class="progress">
+
+                <div class="progress-bar
+                @(ViewBag.RiskScore > 70 ? "bg-danger" :
+                                       ViewBag.RiskScore > 40 ? "bg-warning" :
+                                       "bg-success")"
+                     role="progressbar"
+                     style="width: @ViewBag.RiskScore%">
+
+                    @ViewBag.RiskScore
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<-- ================= TIMELINE ================= -->
+@if (Model.Timeline != null && Model.Timeline.Count > 0)
+{
+    <h5>📜 İşlem Geçmişi</h5>
+    @await Html.PartialAsync("_Timeline", Model.Timeline)
+}
+
+@functions {
+    string GetSeverityClass(FraudSeverity severity)
+    {
+        return severity switch
+        {
+            FraudSeverity.High => "bg-danger",
+            FraudSeverity.Medium => "bg-warning text-dark",
+            FraudSeverity.Low => "bg-secondary",
+            _ => "bg-light"
+        };
+    }
+}
+
+

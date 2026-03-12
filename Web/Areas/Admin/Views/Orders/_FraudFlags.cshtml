@@ -1,0 +1,88 @@
+﻿@using EShopMVC.Areas.Admin.ViewModels.Orders
+@using EShopMVC.Models.Fraud
+@using EShopMVC.Modules.Fraud.Models
+@model IEnumerable<FraudFlag>
+
+@if (!Model.Any())
+{
+    return;
+}
+
+<div class="card border-danger mb-4">
+    <div class="card-header bg-danger text-white">
+        <strong>⚠ Fraud Uyarıları</strong>
+    </div>
+
+    <ul class="list-group list-group-flush">
+        @foreach (var flag in Model)
+        {
+            var badgeClass = flag.Severity switch
+            {
+                FraudSeverity.High => "bg-danger",
+                FraudSeverity.Medium => "bg-warning text-dark",
+                FraudSeverity.Low => "bg-secondary",
+                _ => "bg-light"
+            };
+
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge @badgeClass me-2">
+                        @flag.Severity
+                    </span>
+
+                    <strong>@flag.RuleCode</strong>
+                    <div class="small text-muted">
+                        @flag.Description
+                    </div>
+
+                    <div class="small">
+                        @flag.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                    </div>
+                </div>
+
+                @if (!flag.IsResolved)
+                {
+                    <span class="badge bg-outline-danger">
+                        Açık
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-success">
+                        Çözüldü
+                    </span>
+                }
+            </li>
+            @if (!flag.IsResolved)
+            {
+                <button class="btn btn-sm btn-outline-success resolve-fraud"
+                        data-id="@flag.Id">
+                    Çözüldü
+                </button>
+            }
+
+        }
+
+
+    </ul>
+</div>
+
+<script>
+    document.querySelectorAll(".resolve-fraud").forEach(btn => {
+        btn.addEventListener("click", async function () {
+
+            const id = this.dataset.id;
+
+            const res = await fetch(`/Admin/Fraud/Resolve?id=${id}`, {
+                method: "POST"
+            });
+
+            if (res.ok) {
+                location.reload();
+            } else {
+                alert("Fraud kapatılamadı");
+            }
+        });
+    });
+</script>
+

@@ -1,0 +1,54 @@
+﻿@using EShopMVC.Models
+@model Product
+
+<h2>➕ Yeni Ürün</h2>
+
+<form asp-action="Create" asp-area="Admin" method="post" asp-controller="Product" enctype="multipart/form-data">
+
+    <div class="mb-3">
+        <label>Ürün Adı</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Açıklama</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label>Fiyat</label>
+        <input asp-for="Price" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Stok</label>
+        <input asp-for="Stock" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Kategori</label>
+
+        <select asp-for="CategoryId"
+                class="form-select"
+                asp-items="ViewBag.Categories">
+            <option value="">Kategori Seçiniz</option>
+        </select>
+
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label>Firma</label>
+        <select asp-for="FirmId"
+                class="form-select"
+                asp-items="ViewBag.Firms">
+            <option value="">Firma Seçiniz</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Ürün Fotoğrafı</label>
+        <input type="file" name="imageFile" class="form-control" />
+    </div>
+
+    <button class="btn btn-success">Kaydet</button>
+</form>

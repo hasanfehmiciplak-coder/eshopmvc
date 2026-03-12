@@ -1,0 +1,36 @@
+﻿@model EShopMVC.Modules.Fraud.Models.FraudRule
+
+<h2>Create Fraud Rule</h2>
+
+<form method="post">
+
+    <div class="form-group">
+        <label>Name</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Rule Type</label>
+        <input asp-for="RuleType" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Threshold</label>
+        <input asp-for="Threshold" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Risk Score</label>
+        <input asp-for="RiskScore" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Active</label>
+        <input asp-for="IsActive" type="checkbox" />
+    </div>
+
+    <br />
+
+    <button class="btn btn-success">Save</button>
+
+</form>

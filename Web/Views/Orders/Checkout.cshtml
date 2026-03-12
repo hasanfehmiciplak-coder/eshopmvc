@@ -1,0 +1,15 @@
+﻿@using EShopMVC.Web.ViewModels
+@model CheckoutVM
+
+<h2>Ödeme & Teslimat</h2>
+
+<form asp-action="Review" method="post">
+    <div class="mb-3">
+        <label>Adres</label>
+        <textarea asp-for="Address" class="form-control"></textarea>
+    </div>
+
+    <button class="btn btn-primary">
+        Devam Et →
+    </button>
+</form>

@@ -1,0 +1,35 @@
+﻿@using EShopMVC.Modules.Orders
+@using EShopMVC.Modules.Orders.Models
+@model List<Order>
+
+<h2>❌ İptal Talepleri</h2>
+
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Kullanıcı</th>
+            <th>Tarih</th>
+            <th>Tutar</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>#@o.Id</td>
+                <td>@o.User.Email</td>
+                <td>@o.OrderDate.ToString("dd.MM.yyyy")</td>
+                <td>@o.TotalPrice ₺</td>
+                <td>
+                    <a asp-action="Details"
+                       asp-route-id="@o.Id"
+                       class="btn btn-sm btn-primary">
+                        İncele
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

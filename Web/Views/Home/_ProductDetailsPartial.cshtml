@@ -1,0 +1,17 @@
+﻿@using EShopMVC.Models
+@model Product
+
+<div class="modal-header">
+    <h5 class="modal-title">@Model.Name</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <img src="@Model.ImageUrl" class="img-fluid mb-3" alt="@Model.Name" />
+    <p>@Model.Description</p>
+    <p><strong>Fiyat:</strong> @Model.Price ₺</p>
+    <p><strong>Kategori:</strong> @Model.Category?.Name</p>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary add-to-cart" data-id="@Model.Id">Sepete Ekle</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+</div>

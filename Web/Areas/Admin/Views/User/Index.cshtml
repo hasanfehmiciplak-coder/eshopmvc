@@ -1,0 +1,62 @@
+﻿@model List<EShopMVC.Web.ViewModels.UserListViewModel>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<h2>👥 Kullanıcı Yönetimi</h2>
+
+<table class="table table-bordered mt-3">
+    <thead class="table-dark">
+        <tr>
+            <th>Email</th>
+            <th>Ad Soyad</th>
+            <th>Durum</th>
+            <th>Rol</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.FullName</td>
+                <button class="btn btn-sm btn-warning change-role"
+                        data-id="@user.Id"
+                        data-role="Admin">
+                    Admin Yap
+                </button>
+
+                <button class="btn btn-sm btn-secondary change-role"
+                        data-id="@user.Id"
+                        data-role="User">
+                    User Yap
+                </button>
+                <td id="status-@user.Id">
+                    @if (user.IsActive)
+                    {
+                        <span class="badge bg-success">Aktif</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Pasif</span>
+                    }
+                </td>
+                <td id="role-@user.Id">
+                    <span class="role-text">
+                        @user.Role
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-warning toggle-status-btn"
+                            data-id="@user.Id">
+                        Aktif / Pasif
+                    </button>
+                    <button class="btn btn-sm btn-info toggle-role-btn"
+                            data-id="@user.Id">
+                        Rol Değiştir
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

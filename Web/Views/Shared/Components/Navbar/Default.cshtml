@@ -1,0 +1,85 @@
+﻿@model NavbarViewModel
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">ETicaret</a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+                @if (!Model.IsAuthenticated)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Account/Login">Giriş</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Account/Register">Kayıt</a>
+                    </li>
+                }
+                else
+                {
+                    @* ADMIN *@
+                    @if (Model.IsAdmin)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-warning fw-bold"
+                               href="/Admin/Dashboard">
+                                Admin Panel
+                            </a>
+                        </li>
+                    }
+
+                    @* USER DROPDOWN *@
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle"
+                           href="#"
+                           role="button"
+                           data-bs-toggle="dropdown">
+                            👤 @Model.UserName
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/Account/Profile">
+                                    Profilim
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="/Order/MyOrders">
+                                    Siparişlerim
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="nav-link position-relative" asp-controller="Cart" asp-action="Index">
+                                    🛒
+                                    <span id="cartCount"
+                                          class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                                        0
+                                    </span>
+                                </a>
+                            </li>
+
+                            <li><hr class="dropdown-divider" /></li>
+
+                            <li>
+                                <a class="dropdown-item text-danger"
+                                   href="#"
+                                   onclick="document.getElementById('logoutForm').submit();">
+                                    Çıkış
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>

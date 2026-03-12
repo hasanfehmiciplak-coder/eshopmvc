@@ -1,0 +1,35 @@
+﻿@using EShopMVC.Models.Fraud
+@using EShopMVC.Modules.Fraud.Models
+@model FraudFlag
+
+<div>
+    <h6>🚨 Fraud Detayı</h6>
+
+    <p>
+        <strong>Kural:</strong> @Model.RuleCode
+    </p>
+
+    <p>
+        <strong>Severity:</strong>
+        <span class="badge bg-danger">
+            @Model.Severity
+        </span>
+    </p>
+
+    <p>
+        <strong>Açıklama:</strong>
+        @Model.Description
+    </p>
+
+    <p>
+        <strong>Durum:</strong>
+        @(Model.IsResolved ? "Resolved" : "Active")
+    </p>
+
+    @if (Model.IsResolved)
+    {
+        <p class="text-muted">
+            <strong>Not:</strong> @Model.ResolutionNote
+        </p>
+    }
+</div>
