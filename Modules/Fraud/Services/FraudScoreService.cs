@@ -3,6 +3,7 @@ using EShopMVC.Models;
 using EShopMVC.Models.Fraud;
 using EShopMVC.Models.TimeLine;
 using EShopMVC.Modules.Fraud.Models;
+using EShopMVC.Modules.Orders.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShopMVC.Modules.Fraud.Services
@@ -27,7 +28,7 @@ namespace EShopMVC.Modules.Fraud.Services
                 .ToListAsync();
 
             var failCount = paymentLogs
-                .Count(x => x.PaymentStatus != "SUCCESS");
+                .Count(x => x.Status != "SUCCESS");
 
             if (failCount >= 3)
                 score += 20;
@@ -41,8 +42,8 @@ namespace EShopMVC.Modules.Fraud.Services
             if (hasFraudFlag)
                 score += 30;
 
-            var refundCount = await _context.PartialRefunds
-                .CountAsync(x => x.OrderId == orderId);
+            var refundCount = await _context.Refunds
+                .CountAsync(x => x.OrderItemId == orderId);
 
             if (refundCount > 0)
                 score += 10;
@@ -70,15 +71,16 @@ namespace EShopMVC.Modules.Fraud.Services
             if (order == null)
                 return false;
 
-            order.Status = OrderStatus.Blocked;
+            order.MarkAsBlocked();
 
-            _context.FraudFlags.Add(new FraudFlag
-            {
-                OrderId = order.Id,
-                RuleCode = "AUTO_BLOCK_HIGH_RISK",
-                Description = "Sipariş yüksek risk nedeniyle otomatik bloklandı.",
-                CreatedAt = DateTime.UtcNow
-            });
+            _context.FraudFlags.Add(
+                new FraudFlag(
+                    order.Id,
+                    "AUTO_BLOCK_HIGH_RISK",
+                    FraudSeverity.High,
+                    "Sipariş yüksek risk nedeniyle otomatik bloklandı."
+                )
+            );
 
             await _timelineService.AddAsync(
                 order.Id,
@@ -98,7 +100,7 @@ namespace EShopMVC.Modules.Fraud.Services
             var failCount = await _context.PaymentLogs
                 .Where(x =>
                     x.OrderId == orderId &&
-                    x.PaymentStatus != "SUCCESS" &&
+                    x.Status != "SUCCESS" &&
                     x.CreatedAt >= fiveMinutesAgo)
                 .CountAsync();
 
@@ -113,21 +115,22 @@ namespace EShopMVC.Modules.Fraud.Services
             if (exists)
                 return;
 
-            _context.FraudFlags.Add(new FraudFlag
-            {
-                OrderId = orderId,
-                RuleCode = "PAYMENT_VELOCITY",
-                Description = "Kısa sürede çok fazla ödeme denemesi.",
-                CreatedAt = DateTime.UtcNow
-            });
+            _context.FraudFlags.Add(
+                new FraudFlag(
+                    orderId,
+                    "PAYMENT_VELOCITY",
+                    FraudSeverity.High,
+                    "Kısa sürede çok fazla ödeme denemesi."
+                )
+            );
 
             await _context.SaveChangesAsync();
         }
 
         public async Task<int> CalculateRefundScore(int orderId)
         {
-            var refunds = await _context.PartialRefunds
-                .Where(x => x.OrderId == orderId)
+            var refunds = await _context.Refunds
+                .Where(x => x.OrderItemId == orderId)
                 .CountAsync();
 
             if (refunds >= 3)

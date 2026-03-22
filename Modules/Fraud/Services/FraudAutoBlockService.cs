@@ -1,7 +1,8 @@
 ﻿using EShopMVC.Infrastructure.Data;
 using EShopMVC.Models;
 using EShopMVC.Modules.Fraud.Models;
-using EShopMVC.Modules.Orders.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
+using EShopMVC.Modules.Orders.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShopMVC.Modules.Fraud.Services
@@ -21,8 +22,7 @@ namespace EShopMVC.Modules.Fraud.Services
                 return;
 
             // Order hold
-            order.Status = OrderStatus.FraudReview;
-
+            order.MarkAsFraudReview();
             // IP ban
             if (!string.IsNullOrEmpty(order.IpAddress))
             {

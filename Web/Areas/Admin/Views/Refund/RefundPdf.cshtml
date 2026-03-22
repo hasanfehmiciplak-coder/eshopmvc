@@ -1,5 +1,7 @@
-﻿@using EShopMVC.Modules.Payments.Models
-@model PartialRefund
+﻿@using EShopMVC.Modules.Orders.Domain.Refunds
+@using EShopMVC.Modules.Orders.Domain
+@using EShopMVC.Modules.Payments.Models
+@model RefundLog
 
 <!DOCTYPE html>
 <html>
@@ -46,8 +48,8 @@
 
     <div class="box">
         <strong>Sipariş No:</strong> @Model.OrderId <br />
-        <strong>Müşteri:</strong> @Model.Order.User.Email <br />
-        <strong>Tarih:</strong> @Model.ApprovedAt?.ToString("dd.MM.yyyy HH:mm")
+        <strong>Müşteri:</strong> @Model.UserEmail <br />
+        <strong>Tarih:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")
     </div>
 
     <table>
@@ -61,10 +63,10 @@
         </thead>
         <tbody>
             <tr>
-                <td>@Model.OrderItem.Product.Name</td>
+                <td>@Model.OrderItem.ProductName</td>
                 <td>@Model.Quantity</td>
-                <td>@(Model.RefundAmount / Model.Quantity) ₺</td>
-                <td>@Model.RefundAmount ₺</td>
+                <td>@(Model.Amount / Model.Quantity) ₺</td>
+                <td>@Model.Amount ₺</td>
             </tr>
         </tbody>
     </table>
@@ -72,7 +74,7 @@
     <br />
 
     <div class="box">
-        <strong>Toplam İade:</strong> @Model.RefundAmount ₺ <br />
+        <strong>Toplam İade:</strong> @Model.Amount ₺ <br />
         <strong>Durum:</strong> İade Edilmiştir <br />
         <strong>Ödeme Sağlayıcı:</strong> iyzico
     </div>

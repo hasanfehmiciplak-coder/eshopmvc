@@ -1,0 +1,47 @@
+﻿@model EShopMVC.Models.Product
+
+<h2>Variants - @Model.Name</h2>
+
+<table class="table">
+    <tr>
+        <th>Size</th>
+        <th>Color</th>
+        <th>Stock</th>
+        <th>Actions</th>
+    </tr>
+    @foreach (var v in Model.Variants)
+    {
+        <tr>
+            <td>@v.Size</td>
+            <td>@v.Color</td>
+            <td>@v.Stock</td>
+
+            <td>
+
+                <a asp-action="CreateVariant"
+                   asp-route-productId="@Model.Id"
+                   class="btn btn-success mb-3">
+                    Add Variant
+                </a>
+
+                <a asp-action="EditVariant"
+                   asp-route-id="@v.Id"
+                   class="btn btn-sm btn-primary">
+                    Edit
+                </a>
+
+                <a asp-action="DeleteVariant"
+                   asp-route-id="@v.Id"
+                   class="btn btn-sm btn-danger">
+                    Delete
+                </a>
+
+            </td>
+
+        </tr>
+    }
+    
+
+   
+
+</table>

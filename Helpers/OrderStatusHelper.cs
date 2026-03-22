@@ -1,5 +1,5 @@
-﻿using EShopMVC.Models;
-using global::EShopMVC.Models;
+﻿using EShopMVC.Modules.Orders.Domain.Entities;
+using EShopMVC.Modules.Orders.Domain.Enums;
 
 namespace EShopMVC.Helpers
 {

@@ -8,6 +8,10 @@
         RefundRetryExceeded = 4,
         RefundTooFast = 5,
         MultipleRefunds = 6,
-        SuspiciousActivity = 7
+        SuspiciousActivity = 7,
+        HighAmount = 8,
+        TooManyOrders = 9,
+        Unknown = 10,
+        IpPattern = 11,
     }
 }

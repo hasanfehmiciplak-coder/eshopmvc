@@ -1,5 +1,10 @@
-﻿@using EShopMVC.Modules.Payments.Models
-@model List<PartialRefund>
+﻿@using EShopMVC.Modules.Orders.Domain.Enums
+@using EShopMVC.Modules.Orders.Domain
+@using EShopMVC.Modules.Payments.Models
+@using Refund = EShopMVC.Modules.Orders.Domain.Entities.Refund
+
+
+@model List<Refund>
 
 @{
     const int RefundApprovalHourLimit = 24;
@@ -22,10 +27,8 @@
     <tbody>
         @foreach (var r in Model)
         {
-            var logs = r.RefundLogs ?? new List<RefundLog>();
-
-            var failedLogs = logs
-            .Where(x => x.Status == RefundStatus.Failed)
+            var failedLogs = Model
+            .Where(x => x.Id == r.Id && x.Status == RefundStatus.Failed)
             .OrderByDescending(x => x.CreatedAt)
             .ToList();
 
@@ -41,11 +44,11 @@
             var canApproveReject = approvalRemaining > 0;
 
             <tr>
-                <td>#@r.OrderId</td>
-                <td>@r.OrderItem.Product.Name</td>
+                <td>#@r.OrderItemId</td>
+                <td>@r.OrderItemId</td>
                 <td>@r.Quantity</td>
-                <td class="text-danger">@r.RefundAmount ₺</td>
-                <td>@r.Reason</td>
+                <td class="text-danger">@r.Amount ₺</td>
+                <td>--</td>
                 <td>
                     @if (canApproveReject)
                     {

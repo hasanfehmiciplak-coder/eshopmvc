@@ -1,4 +1,7 @@
-﻿<h2>Fraud Case - Order #@Model.Id</h2>
+﻿@using EShopMVC.Modules.Orders.Domain.Enums
+@model OrderDetailViewModel
+
+<h2>Fraud Case - Order #@Model.Order.Id</h2>
 
 <hr />
 
@@ -14,52 +17,60 @@
     </thead>
 
     <tbody>
-
-        @foreach (var r in ViewBag.Refunds)
+        @foreach (var r in Model.Refunds)
         {
             <tr>
-                <td>@r.Reason</td>
-                <td>@r.Status</td>
+                <td>@r.Amount</td>
+
+                <td>
+                    @r.Status
+
+                    @if (r.Status == RefundStatus.Failed)
+                    {
+                        <form asp-action="RetryNow"
+                              asp-route-id="@r.Id"
+                              method="post"
+                              class="mt-1">
+                            <button class="btn btn-warning btn-sm">
+                                Retry
+                            </button>
+                        </form>
+                    }
+                </td>
+
                 <td>@r.CreatedAt</td>
             </tr>
         }
-
     </tbody>
 </table>
-
 
 <h4>Fraud Flags</h4>
 
 <table class="table table-sm">
     <thead>
         <tr>
-            <th>Reason</th>
+            <th>Rule</th>
             <th>Date</th>
         </tr>
     </thead>
 
     <tbody>
-
-        @foreach (var f in ViewBag.FraudFlags)
+        @foreach (var f in Model.FraudFlags)
         {
             <tr>
-                <td class="text-danger">@f.Reason</td>
+                <td class="text-danger">@f.RuleCode</td>
                 <td>@f.CreatedAt</td>
             </tr>
         }
-
     </tbody>
 </table>
-
 
 <h4>Timeline</h4>
 
 <ul class="list-group">
-
-    @foreach (var t in ViewBag.Timeline)
+    @foreach (var t in Model.Timeline)
     {
         <li class="list-group-item">
-
             <strong>@t.EventType</strong>
 
             <div class="text-muted small">
@@ -69,8 +80,7 @@
             <div class="text-muted small">
                 @t.CreatedAt
             </div>
-
         </li>
     }
-
 </ul>
+

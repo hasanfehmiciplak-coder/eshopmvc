@@ -33,10 +33,10 @@ namespace EShopMVC.Areas.Admin.Controllers
             if (order == null)
                 return NotFound();
 
-            order.RefundOverrideEnabled = true;
-            order.RefundOverrideNote = note;
-            order.RefundOverrideAt = DateTime.Now;
-            order.RefundOverrideByUserId = _userManager.GetUserId(User);
+            order.EnableRefundOverride(
+                note,
+                _userManager.GetUserId(User)
+            );
 
             await _context.SaveChangesAsync();
 

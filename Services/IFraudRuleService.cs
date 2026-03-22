@@ -1,4 +1,4 @@
-﻿using EShopMVC.Modules.Orders.Models;
+﻿using EShopMVC.Modules.Orders.Domain.Entities;
 
 public interface IFraudRuleService
 {

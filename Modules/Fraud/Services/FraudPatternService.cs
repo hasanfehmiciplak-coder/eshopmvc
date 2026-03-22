@@ -47,13 +47,9 @@ namespace EShopMVC.Modules.Fraud.Services
 
                     if (!exists)
                     {
-                        _context.FraudFlags.Add(new FraudFlag
-                        {
-                            OrderId = orderId,
-                            RuleCode = "IP_PATTERN",
-                            Description = "Aynı IP adresinden çoklu ödeme denemesi.",
-                            CreatedAt = DateTime.UtcNow
-                        });
+                        _context.FraudFlags.Add(
+                            new FraudFlag(orderId, "IP_PATTERN", FraudReason.IpPattern)
+                        );
                     }
                 }
             }

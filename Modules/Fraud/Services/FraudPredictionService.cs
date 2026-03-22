@@ -17,7 +17,7 @@ public class FraudPredictionService
         var failCount = await _context.PaymentLogs
             .CountAsync(x =>
                 x.OrderId == orderId &&
-                x.PaymentStatus != "SUCCESS");
+                x.Status != "SUCCESS");
 
         if (failCount >= 3)
             score += 0.25;
@@ -30,8 +30,8 @@ public class FraudPredictionService
         if (velocity)
             score += 0.20;
 
-        var refund = await _context.PartialRefunds
-            .AnyAsync(x => x.OrderId == orderId);
+        var refund = await _context.Refunds
+            .AnyAsync(x => x.OrderItemId == orderId);
 
         if (refund)
             score += 0.15;

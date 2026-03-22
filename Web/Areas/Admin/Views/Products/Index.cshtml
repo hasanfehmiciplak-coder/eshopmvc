@@ -1,0 +1,84 @@
+﻿@model IEnumerable<EShopMVC.Models.Product>
+
+<h2>Products</h2>
+
+<a asp-action="Create" class="btn btn-success mb-3">
+    Create Product
+</a>
+
+<table class="table table-bordered table-striped">
+
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Stock</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>@item.Id</td>
+
+                <td>
+                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                    {
+                        <img src="@item.ImageUrl" width="60" />
+                    }
+                </td>
+
+                <td>@item.Name</td>
+
+                <td>@item.UnitPrice ₺</td>
+
+                <td>@item.Category?.Name</td>
+
+                <td>@item.Stock</td>
+
+                <td>
+                    @if (item.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Passive</span>
+                    }
+                </td>
+
+                <td>
+
+                    <a asp-action="Variants"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-info">
+                        Variants
+                    </a>
+
+                    <a asp-action="Edit"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-primary">
+                        Edit
+                    </a>
+
+                    <a asp-action="Delete" asp-route-id="@item.Id"
+                       class="btn btn-sm btn-danger">
+                        Delete
+                    </a>
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

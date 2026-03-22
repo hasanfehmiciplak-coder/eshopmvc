@@ -1,4 +1,4 @@
-﻿using EShopMVC.Modules.Orders.Models;
+﻿using EShopMVC.Modules.Orders.Domain.Entities;
 using System.ComponentModel.DataAnnotations;
 
 namespace EShopMVC.Web.ViewModels

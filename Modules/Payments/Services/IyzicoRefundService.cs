@@ -1,5 +1,6 @@
 ﻿using EShopMVC.Infrastructure.Data;
 using EShopMVC.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
 using EShopMVC.Services;
 using Microsoft.Extensions.Options;
 

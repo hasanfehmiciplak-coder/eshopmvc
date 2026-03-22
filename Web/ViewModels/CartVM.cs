@@ -1,4 +1,4 @@
-﻿using EShopMVC.Modules.Orders.Models;
+﻿using EShopMVC.Modules.Orders.Domain.Entities;
 
 namespace EShopMVC.Web.ViewModels
 {
@@ -7,6 +7,6 @@ namespace EShopMVC.Web.ViewModels
         public List<CartItem> CartItems { get; set; } = new();
 
         public decimal TotalPrice =>
-            CartItems.Sum(x => x.Product.Price * x.Quantity);
+            CartItems.Sum(x => x.Product.UnitPrice * x.Quantity);
     }
 }

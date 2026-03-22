@@ -1,38 +1,35 @@
-﻿using EShopMVC.Models;
+﻿using EShopMVC.Areas.Admin.ViewModels.Orders;
 using EShopMVC.Models.Fraud;
-using EShopMVC.Modules.Orders.Models;
-using EShopMVC.Modules.Payments.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
+using EShopMVC.Modules.Orders.Domain.Logs;
+using EShopMVC.Modules.Orders.Domain.Refunds;
+using Refund = EShopMVC.Modules.Orders.Domain.Entities.Refund;
 
-namespace EShopMVC.Areas.Admin.ViewModels.Orders
+public class OrderDetailViewModel
 {
-    public class OrderDetailViewModel
-    {
-        public Order Order { get; set; } = null!;
+    public Order Order { get; set; } = null!;
 
-        public List<FraudFlagItemVM> FraudFlags { get; set; } = new();
+    public List<FraudFlagItemVM> FraudFlags { get; set; } = new();
 
-        public List<TimelineItemVM> Timeline { get; set; } = new();
+    public List<Refund> Refunds { get; set; } = new(); // ✔ TEK KALDI
 
-        public Dictionary<string, int> RuleHitCounts { get; set; }
+    public List<TimelineItemVM> Timeline { get; set; } = new();
 
-        public List<RefundLog> RefundLogs { get; set; }
-        public List<PaymentLog> PaymentLogs { get; set; }
+    public Dictionary<string, int> RuleHitCounts { get; set; }
 
-        // 🔹 Genel fraud var mı
-        public bool HasFraudFlag =>
-            FraudFlags != null && FraudFlags.Any();
+    public List<PaymentLog> PaymentLogs { get; set; } = new();
 
-        // 🔥 HIGH fraud var mı
-        public bool HasHighFraud =>
-            FraudFlags != null &&
-            FraudFlags.Any(f => f.Severity == FraudSeverity.High);
+    public bool HasFraudFlag =>
+        FraudFlags != null && FraudFlags.Any();
 
-        // 🔥 Order’dan gelen override bilgisi
-        public bool RefundOverrideEnabled =>
-            Order?.RefundOverrideEnabled ?? false;
+    public bool HasHighFraud =>
+        FraudFlags != null &&
+        FraudFlags.Any(f => f.Severity == FraudSeverity.High);
 
-        public int PaymentAttemptCount { get; set; }
-        public int SuccessfulPaymentCount { get; set; }
-        public int FailedPaymentCount { get; set; }
-    }
+    public bool RefundOverrideEnabled =>
+        Order?.RefundOverrideEnabled ?? false;
+
+    public int PaymentAttemptCount { get; set; }
+    public int SuccessfulPaymentCount { get; set; }
+    public int FailedPaymentCount { get; set; }
 }

@@ -1,31 +1,46 @@
-﻿using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using EShopMVC.Data.Seed;
-using EShopMVC.Hubs;
+﻿using EShopMVC.Hubs;
+using EShopMVC.Infrastructure.Concurrency;
 using EShopMVC.Infrastructure.Data;
+using EShopMVC.Infrastructure.Data.Seed;
 using EShopMVC.Infrastructure.Hangfire;
 using EShopMVC.Infrastructure.Jobs;
+using EShopMVC.Infrastructure.Middleware;
 using EShopMVC.Models;
 using EShopMVC.Models.Options;
+using EShopMVC.Modules.Analytics.Services;
 using EShopMVC.Modules.Fraud;
 using EShopMVC.Modules.Fraud.Repositories;
+using EShopMVC.Modules.Fraud.Rules;
 using EShopMVC.Modules.Fraud.Services;
 using EShopMVC.Modules.Orders;
+using EShopMVC.Modules.Orders.Application;
+using EShopMVC.Modules.Orders.Application.Services;
+using EShopMVC.Modules.Orders.Queries;
 using EShopMVC.Modules.Payments;
 using EShopMVC.Modules.Payments.Public;
 using EShopMVC.Modules.Payments.Services;
 using EShopMVC.Repositories.Refunds;
 using EShopMVC.Services;
 using EShopMVC.Services.Orders;
-using EShopMVC.Services.Refunds;
 using EShopMVC.Shared.EventBus;
 using Hangfire;
-using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System.Globalization;
 using System.Threading.RateLimiting;
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(
+        "logs/log-.txt",
+        rollingInterval: RollingInterval.Day,
+        outputTemplate:
+        "[{Timestamp:HH:mm:ss} {Level:u3}] [CorrelationId:{CorrelationId}] {Message:lj}{NewLine}{Exception}"
+    )
+    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +52,9 @@ GlobalJobFilters.Filters.Add(
 
 // DB
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .EnableSensitiveDataLogging()
+           .LogTo(Console.WriteLine));
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
@@ -49,12 +66,6 @@ builder.Services.AddHttpClient<IyzicoRestService>();
 builder.Services.Configure<EShopMVC.Models.IyzicoOptions>(
     builder.Configuration.GetSection("Iyzico")
 );
-
-//RecurringJob.AddOrUpdate<OutboxProcessorJob>(
-//    "process-outbox",
-//    x => x.ProcessAsync(),
-//    "*/1 * * * *"
-//);
 
 builder.Services.AddSingleton<JobFailureTimelineFilter>();
 
@@ -70,6 +81,8 @@ builder.Services.AddPaymentsModule();
 builder.Services.AddFraudModule(); builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
 
 builder.Services.AddOrdersModule();
+
+builder.Host.UseSerilog();
 
 builder.Services.AddMemoryCache();
 
@@ -144,21 +157,24 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
-builder.Services.AddScoped<IRefundService, RefundService>(); // 🔥 DOĞRU
-
 builder.Services.AddScoped<IPaymentRefundGateway, IyzicoRefundService>(); // 🔥 DOĞRU
 
 builder.Services.AddScoped<IFraudRuleService, FraudRuleService>();
+builder.Services.AddScoped<IFraudRule, HighAmountRule>();
+builder.Services.AddScoped<IFraudRule, TooManyOrdersRule>();
+builder.Services.AddScoped<FraudDetectionService>();
 builder.Services.AddScoped<IOrderDetailsService, OrderDetailsService>();
 builder.Services.AddScoped<OrderTimelineService>();
-builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddScoped<OrderTimelineBuilder>();
+builder.Services.AddScoped<RefundService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<OrderMailJob>();
+builder.Services.AddScoped<CheckoutService>();
 builder.Services.AddScoped<OrderRiskService>();
 builder.Services.AddScoped<FraudScoreService>();
 builder.Services.AddScoped<FraudTimelineService>();
 builder.Services.AddScoped<FraudAutoBlockService>();
+builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<FraudAlertService>();
 builder.Services.AddScoped<UserFraudService>();
 builder.Services.AddScoped<FraudPatternService>();
@@ -166,16 +182,23 @@ builder.Services.AddScoped<FraudGraphService>();
 builder.Services.AddScoped<FraudPredictionService>();
 builder.Services.AddScoped<IPaymentGateway, IyzicoService>();
 builder.Services.AddSignalR();
+builder.Services.AddScoped<OrdersQueryService>();
+builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<FraudEvaluationService>();
 builder.Services.AddScoped<FraudService>();
 builder.Services.AddScoped<FraudRuleEngine>();
-builder.Services.AddScoped<FraudDetectionService>();
+builder.Services.AddHostedService<OutboxProcessor>();
 builder.Services.AddScoped<FraudCaseService>();
+builder.Services.AddSingleton<CheckoutLockService>();
 builder.Services.AddScoped<BehaviorScoreService>();
 builder.Services.AddScoped<FraudRiskPipeline>();
+builder.Services.AddScoped<AnalyticsService>();
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings")
 );
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 builder.Services
     .AddControllersWithViews()
@@ -250,6 +273,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<PerformanceMiddleware>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+app.UseSerilogRequestLogging();
 
 app.UseSession();
 app.UseRateLimiter();

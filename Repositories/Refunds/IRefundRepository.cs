@@ -1,10 +1,10 @@
-﻿using EShopMVC.Models;
+﻿using EShopMVC.Modules.Orders.Domain.Entities;
 
 namespace EShopMVC.Repositories.Refunds
 {
     public interface IRefundRepository
     {
-        Task<Refund> GetAsync(Guid refundId);
+        Task<Refund> GetAsync(int refundId);
 
         Task UpdateAsync(Refund refund);
 

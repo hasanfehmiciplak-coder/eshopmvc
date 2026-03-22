@@ -1,6 +1,8 @@
 ﻿@using EShopMVC.Modules.Orders
-@using EShopMVC.Modules.Orders.Models
-@model List<Order>
+@using EShopMVC.Modules.Orders.Domain.Entities
+@using EShopMVC.Modules.Orders.Domain
+@using EShopMVC.Web.Areas.Admin.ViewModels
+@model List<CancelRequestVM>
 
 <h2>❌ İptal Talepleri</h2>
 
@@ -19,7 +21,7 @@
         {
             <tr>
                 <td>#@o.Id</td>
-                <td>@o.User.Email</td>
+                <td>@o.UserEmail</td>
                 <td>@o.OrderDate.ToString("dd.MM.yyyy")</td>
                 <td>@o.TotalPrice ₺</td>
                 <td>

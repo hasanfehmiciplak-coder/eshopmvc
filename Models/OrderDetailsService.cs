@@ -2,8 +2,8 @@
 using EShopMVC.Infrastructure.Data;
 using EShopMVC.Models;
 using EShopMVC.Models.TimeLine;
-using EShopMVC.Modules.Orders.Models;
-using EShopMVC.Modules.Payments.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
+using EShopMVC.Modules.Orders.Domain.Logs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -29,11 +29,8 @@ public class OrderDetailsService : IOrderDetailsService
             return vm;
 
         var order = await _context.Orders
-            .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+            .Include(o => o.Items)
             .Include(o => o.FraudFlags)
-            .Include(o => o.PartialRefunds)
-                .ThenInclude(r => r.OrderItem)
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order == null)
@@ -117,7 +114,7 @@ public class OrderDetailsService : IOrderDetailsService
             {
                 Date = paymentLog.CreatedAt,
                 Title = "Payment",
-                Description = paymentLog.PaymentStatus,
+                Description = paymentLog.Status,
                 EventType = TimelineEventType.PaymentReceived
             });
         }

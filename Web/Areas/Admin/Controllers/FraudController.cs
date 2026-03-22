@@ -90,9 +90,7 @@ public class FraudController : Controller
         if (flag == null)
             return NotFound();
 
-        flag.IsResolved = true;
-        flag.ResolvedAt = DateTime.UtcNow;
-        flag.ResolutionNote = note;
+        flag.Resolve("Ignored by admin", "SYSTEM");
         flag.ResolvedByUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         _fraudFlagRepository.Update(flag);
@@ -114,7 +112,7 @@ public class FraudController : Controller
 
         var totalOrders = await _context.Orders.CountAsync();
 
-        var refundCount = await _context.PartialRefunds.CountAsync();
+        var refundCount = await _context.Refunds.CountAsync();
 
         var refundRate = totalOrders == 0
             ? 0
@@ -163,7 +161,7 @@ public class FraudController : Controller
     public async Task<IActionResult> Dashboard()
     {
         var totalOrders = await _context.Orders.CountAsync();
-        var totalRefunds = await _context.RefundLogs.CountAsync();
+        var totalRefunds = await _context.Refunds.CountAsync();
         var fraudFlags = await _context.FraudFlags.CountAsync();
 
         var refundRate = totalOrders == 0 ? 0 :
@@ -197,12 +195,15 @@ public class FraudController : Controller
 
         // Suspicious Orders
         var suspiciousOrders = await _context.Orders
-            .Include(o => o.User)
             .Select(o => new
             {
                 o.Id,
-                UserEmail = o.User.Email,
-                RefundCount = _context.RefundLogs.Count(r => r.OrderId == o.Id),
+                UserEmail = _context.Users
+                    .Where(u => u.Id == o.UserId)
+                    .Select(u => u.Email)
+                    .FirstOrDefault(),
+
+                RefundCount = _context.Refunds.Count(r => r.OrderItemId == o.Id),
                 FraudCount = _context.FraudFlags.Count(f => f.OrderId == o.Id)
             })
             .OrderByDescending(x => x.FraudCount)
@@ -218,30 +219,29 @@ public class FraudController : Controller
     public async Task<IActionResult> Case(int id)
     {
         var order = await _context.Orders
-            .Include(o => o.OrderItems)
+            .Include(o => o.Items)
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (order == null)
             return NotFound();
 
-        var refunds = await _context.RefundLogs
-            .Where(r => r.OrderId == id)
+        // ✔ RefundLog buraya
+        var refunds = await _context.Refunds
+            .Where(r => r.OrderItemId == id)
             .ToListAsync();
 
-        var fraudFlags = await _context.FraudFlags
-            .Where(f => f.OrderId == id)
+        var paymentLogs = await _context.PaymentLogs
+            .Where(p => p.OrderId == id)
             .ToListAsync();
 
-        var timeline = await _context.OrderTimelines
-            .Where(t => t.OrderId == id)
-            .OrderByDescending(t => t.CreatedAt)
-            .ToListAsync();
+        var vm = new OrderDetailViewModel
+        {
+            Order = order,
+            Refunds = refunds,
+            PaymentLogs = paymentLogs
+        };
 
-        ViewBag.Refunds = refunds;
-        ViewBag.FraudFlags = fraudFlags;
-        ViewBag.Timeline = timeline;
-
-        return View(order);
+        return View(vm);
     }
 
     [HttpPost]
@@ -251,17 +251,15 @@ public class FraudController : Controller
         if (flag == null)
             return NotFound();
 
-        flag.IsResolved = true;
+        flag.Resolve("Ignored by admin", "SYSTEM");
         flag.ResolvedAt = DateTime.UtcNow;
         flag.ResolutionNote = "Ignored by admin";
 
         await _context.SaveChangesAsync();
 
         // 🔥 DOĞRU CACHE INVALIDATION
-        if (flag.OrderId.HasValue)
-        {
-            _cache.Remove(CacheKeys.OrderDetails(flag.OrderId.Value));
-        }
+        _cache.Remove(CacheKeys.OrderDetails(flag.OrderId));
+
         return RedirectToAction(
             "Details",
             "Order",

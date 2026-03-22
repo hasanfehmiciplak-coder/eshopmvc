@@ -1,8 +1,9 @@
 ﻿@using System.Linq
 @using EShopMVC.Areas.Admin.ViewModels.Orders
+@using EShopMVC.Modules.Orders.Domain.Enums
 @using EShopMVC.Models.Fraud
 @using EShopMVC.Models
-@using Iyzipay.Model
+@using Iyzipay
 @model OrderDetailViewModel
 
 <h3>📦 Sipariş Detayı (#@Model.Order.Id)</h3>
@@ -39,7 +40,7 @@
 }
 
 <div class="mb-3">
-    <p><strong>Kullanıcı:</strong> @Model.Order.User.Email</p>
+    <p><strong>Kullanıcı:</strong> @Model.Order.UserId</p>
     <p><strong>Adres:</strong> @Model.Order.Address</p>
     <p><strong>Tarih:</strong> @Model.Order.OrderDate</p>
     <p><strong>Durum:</strong> @Model.Order.Status</p>
@@ -70,10 +71,10 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Order.OrderItems)
+        @foreach (var item in Model.Order.Items)
         {
             <tr>
-                <td>@item.Product.Name</td>
+                <td>@item.ProductName</td>
                 <td>@item.Price ₺</td>
                 <td>@item.Quantity</td>
                 <td>@(item.Price* item.Quantity) ₺</td>
@@ -97,12 +98,12 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Order.OrderItems)
+        @foreach (var item in Model.Order.Items)
         {
             var refundable = item.Quantity - item.RefundedQuantity;
 
             <tr>
-                <td>@item.Product.Name</td>
+                <td>@item.ProductName</td>
                 <td>@item.Quantity</td>
                 <td>@item.RefundedQuantity</td>
                 <td>
@@ -143,7 +144,7 @@
 
 
 <!-- ================= İADE GEÇMİŞİ ================= -->
-@if (Model.Order.PartialRefunds != null && Model.Order.PartialRefunds.Count > 0)
+@if (Model.Refunds != null && Model.Refunds.Count > 0)
 {
     <h5 class="text-danger">↩️ İade Geçmişi</h5>
 
@@ -158,9 +159,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var refund in Model.Order.PartialRefunds)
+            @foreach (var refund in Model.Refunds)
             {
-                var orderItem = Model.Order.OrderItems
+                var orderItem = Model.Order.Items
                 .FirstOrDefault(oi => oi.Id == refund.OrderItemId);
 
                 var canUndo =
@@ -170,9 +171,9 @@
 
                 <tr class="@(refund.Status == RefundStatus.Cancelled ? "table-secondary" : "")">
 
-                    <td>@orderItem?.Product?.Name</td>
+                    <td>@orderItem?.ProductName?</td>
                     <td>@refund.Quantity</td>
-                    <td class="text-danger">@refund.RefundAmount ₺</td>
+                    <td class="text-danger">@refund.Amount ₺</td>
                     <td>@refund.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
                     <td>
                         @* ✅ GERİ AL *@
@@ -390,15 +391,13 @@
 
                 <tbody>
 
-                    @foreach (var log in Model.Order.PaymentLogs)
+                    @foreach (var log in Model.PaymentLogs)
                     {
                         <tr>
-
                             <td>@log.PaymentTransactionId</td>
 
                             <td>
-
-                                @if (log.PaymentStatus == "SUCCESS")
+                                @if (log.Status == "SUCCESS")
                                 {
                                     <span class="badge bg-success">Success</span>
                                 }
@@ -406,16 +405,13 @@
                                 {
                                     <span class="badge bg-danger">Failed</span>
                                 }
-
                             </td>
 
                             <td>@log.PaidAmount ₺</td>
 
                             <td>@log.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-
                         </tr>
                     }
-
                 </tbody>
 
             </table>
@@ -444,19 +440,14 @@
 
                 <tbody>
 
-                    @foreach (var refund in Model.Order.PartialRefunds)
+                    @foreach (var refund in Model.Refunds)
                     {
                         <tr>
-
                             <td>#@refund.Id</td>
-
-                            <td>@refund.RefundAmount ₺</td>
-
+                            <td>@refund.Amount ₺</td>
                             <td>@refund.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-
                         </tr>
                     }
-
                 </tbody>
 
             </table>

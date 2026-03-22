@@ -32,8 +32,8 @@ namespace EShopMVC.Areas.Admin.Controllers
                 .Where(x => x.UserId == userId)
                 .ToListAsync();
 
-            var refunds = await _context.PartialRefunds
-                .Where(x => orders.Select(o => o.Id).Contains(x.OrderId))
+            var refunds = await _context.Refunds
+                .Where(x => orders.Select(o => o.Id).Contains(x.OrderItemId))
                 .CountAsync();
 
             var ips = orders

@@ -1,6 +1,6 @@
 ﻿using EShopMVC.Infrastructure.Data;
 using EShopMVC.Models.TimeLine;
-using EShopMVC.Modules.Orders.Models;
+using EShopMVC.Modules.Orders.Domain;
 
 namespace EShopMVC.Modules.Fraud.Services
 {

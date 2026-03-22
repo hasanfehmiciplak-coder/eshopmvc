@@ -1,7 +1,7 @@
 ﻿using EShopMVC.Models;
-using EShopMVC.Models.Fraud;
 using EShopMVC.Modules.Fraud.Models;
-using EShopMVC.Modules.Orders.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
+using EShopMVC.Modules.Orders.Domain.Refunds;
 
 namespace EShopMVC.Modules.Fraud.Services
 {
@@ -11,7 +11,7 @@ namespace EShopMVC.Modules.Fraud.Services
 
         FraudFlag? EvaluateRefund(
             Order order,
-            Refund refund);
+            Orders.Domain.Entities.Refund refund);
 
         Task ResolveRefundFraudAsync(int orderId);
     }

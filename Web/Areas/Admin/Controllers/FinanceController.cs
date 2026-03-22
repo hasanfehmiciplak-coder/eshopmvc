@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using EShopMVC.Infrastructure.Data;
 using EShopMVC.Models;
+using EShopMVC.Modules.Orders.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +24,7 @@ public class FinanceController : Controller
             .Where(o => o.Status != OrderStatus.Cancelled)
             .Sum(o => (decimal?)o.TotalPrice) ?? 0;
 
-        var totalRefund = _context.RefundLogs
+        var totalRefund = _context.Refunds
 .Where(r => r.Status == RefundStatus.Success)
 .Sum(r => (decimal?)r.Amount) ?? 0;
 
@@ -64,7 +65,7 @@ public class FinanceController : Controller
             })
             .ToList();
 
-        var refunds = _context.RefundLogs
+        var refunds = _context.Refunds
 .Where(r => r.Status == RefundStatus.Success)
             .Select(r => new
             {
@@ -109,7 +110,7 @@ public class FinanceController : Controller
             })
             .ToList();
 
-        var refunds = _context.RefundLogs
+        var refunds = _context.Refunds
 .Where(r => r.Status == RefundStatus.Success)
             .Select(r => new
             {

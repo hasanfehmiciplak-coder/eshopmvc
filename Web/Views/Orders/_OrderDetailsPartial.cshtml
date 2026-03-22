@@ -1,5 +1,7 @@
 ﻿@using EShopMVC.Modules.Orders
-@using EShopMVC.Modules.Orders.Models
+@using EShopMVC.Modules.Orders.Domain.Entities
+@using EShopMVC.Modules.Orders.Domain
+@using EShopMVC.Modules.Orders.Domain.Enums
 @model Order
 
 <div class="order-details">
@@ -75,10 +77,10 @@
     <!-- ITEMS -->
     <h6>Ürünler</h6>
     <ul class="mb-3">
-        @foreach (var item in Model.OrderItems)
+        @foreach (var item in Model.Items)
         {
             <li>
-                @item.Product.Name —
+                @item.ProductName —
                 @item.Quantity adet —
                 @item.Price ₺
             </li>

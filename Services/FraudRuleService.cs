@@ -1,7 +1,7 @@
 ﻿using EShopMVC.Infrastructure.Data;
 using EShopMVC.Models.Fraud;
 using EShopMVC.Modules.Fraud.Models;
-using EShopMVC.Modules.Orders.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 public class FraudRuleService : IFraudRuleService
@@ -16,8 +16,8 @@ public class FraudRuleService : IFraudRuleService
     public async Task EvaluateAsync(Order order)
     {
         // RULE_01: Aynı siparişte 2+ iade
-        var refundCount = await _context.PartialRefunds
-            .CountAsync(x => x.OrderId == order.Id);
+        var refundCount = await _context.Refunds
+            .CountAsync(x => x.OrderItemId == order.Id);
 
         if (refundCount >= 2)
         {
@@ -29,10 +29,11 @@ public class FraudRuleService : IFraudRuleService
         }
 
         // RULE_02: Kullanıcı son 30 günde 3+ iade
-        var userRefundCount = await _context.PartialRefunds
-            .Include(x => x.Order)
+        var userRefundCount = await _context.Refunds
+            .Include(x => x.OrderItem)
             .CountAsync(x =>
-                x.Order.UserId == order.UserId &&
+
+                x.OrderItem.Order.UserId == order.UserId &&
                 x.CreatedAt >= DateTime.Today.AddDays(-30));
 
         if (userRefundCount >= 3)
@@ -47,9 +48,9 @@ public class FraudRuleService : IFraudRuleService
         // RULE_03: İade oranı %50+
         if (order.TotalPrice > 0)
         {
-            var refunded = await _context.PartialRefunds
-                .Where(x => x.OrderId == order.Id)
-                .SumAsync(x => x.RefundAmount);
+            var refunded = await _context.Refunds
+                .Where(x => x.OrderItemId == order.Id)
+                .SumAsync(x => x.Amount);
 
             if (refunded / order.TotalPrice >= 0.5m)
             {
@@ -75,14 +76,9 @@ public class FraudRuleService : IFraudRuleService
 
         if (!exists)
         {
-            _context.FraudFlags.Add(new FraudFlag
-            {
-                OrderId = order.Id,
-                RuleCode = rule,
-                Reason = reason,
-                Description = description,
-                Severity = FraudSeverity.Medium
-            });
+            _context.FraudFlags.Add(
+                new FraudFlag(order.Id, rule, reason)
+            );
 
             await _context.SaveChangesAsync();
         }

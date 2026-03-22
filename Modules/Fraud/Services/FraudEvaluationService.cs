@@ -1,8 +1,8 @@
-﻿using EShopMVC.Models;
-using EShopMVC.Models.Fraud;
+﻿using EShopMVC.Models.Fraud;
 using EShopMVC.Modules.Fraud.Models;
-using EShopMVC.Modules.Orders.Models;
-using Order = EShopMVC.Modules.Orders.Models.Order;
+using EShopMVC.Modules.Orders.Domain.Enums;
+using Order = EShopMVC.Modules.Orders.Domain.Entities.Order;
+using Refund = EShopMVC.Modules.Orders.Domain.Entities.Refund;
 
 namespace EShopMVC.Modules.Fraud.Services
 {
@@ -15,7 +15,13 @@ namespace EShopMVC.Modules.Fraud.Services
         private readonly FraudAutoBlockService _autoBlock;
         private readonly FraudAlertService _alertService;
 
-        public FraudEvaluationService(FraudRuleEngine ruleEngine, FraudRiskPipeline riskPipeline, FraudTimelineService timeline, FraudCaseService caseService, FraudAutoBlockService autoBlock, FraudAlertService alertService)
+        public FraudEvaluationService(
+            FraudRuleEngine ruleEngine,
+            FraudRiskPipeline riskPipeline,
+            FraudTimelineService timeline,
+            FraudCaseService caseService,
+            FraudAutoBlockService autoBlock,
+            FraudAlertService alertService)
         {
             _ruleEngine = ruleEngine;
             _riskPipeline = riskPipeline;
@@ -25,7 +31,7 @@ namespace EShopMVC.Modules.Fraud.Services
             _alertService = alertService;
         }
 
-        public async Task<FraudFlag?> EvaluateRefund(Order order, RefundLog refund)
+        public async Task<FraudFlag?> EvaluateRefund(Order order, Refund refund)
         {
             var risk = await _riskPipeline.CalculateAsync(order.Id);
 
@@ -71,7 +77,7 @@ namespace EShopMVC.Modules.Fraud.Services
             // 2️⃣ HIGH RATIO
             var totalRefunded = order.PartialRefunds
                 .Where(r => r.Status == RefundStatus.Success)
-                .Sum(r => r.RefundAmount) + refund.Amount;
+                .Sum(r => r.Amount) + refund.Amount;
 
             if (totalRefunded / order.TotalPrice >= 0.8m)
             {
@@ -100,21 +106,14 @@ namespace EShopMVC.Modules.Fraud.Services
             return null;
         }
 
+        // ✅ Burada constructor yerine factory metod tanımlıyoruz
         private FraudFlag CreateFlag(
             int orderId,
             string ruleCode,
             FraudSeverity severity,
             string description)
         {
-            return new FraudFlag
-            {
-                OrderId = orderId,
-                RuleCode = ruleCode,
-                Severity = severity,
-                Description = description,
-                IsResolved = false,
-                CreatedAt = DateTime.Now
-            };
+            return new FraudFlag(orderId, ruleCode, severity, description);
         }
 
         public async Task EvaluateOrderAsync(Order order)

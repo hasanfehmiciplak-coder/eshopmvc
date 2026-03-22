@@ -2,7 +2,7 @@
 using EShopMVC.Models.Fraud;
 using EShopMVC.Models.TimeLine;
 using EShopMVC.Modules.Fraud.Models;
-using EShopMVC.Modules.Orders.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
 
 namespace EShopMVC.Services.Orders
 {

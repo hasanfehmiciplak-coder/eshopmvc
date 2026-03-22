@@ -1,4 +1,5 @@
-﻿@using EShopMVC.Modules.Payments.Models
+﻿@using EShopMVC.Modules.Orders.Domain.Logs
+@using EShopMVC.Modules.Payments.Models
 @model List<PaymentLog>
 
 <h2>💳 Ödeme Logları</h2>
@@ -52,7 +53,7 @@
                 <td>@log.Id</td>
                 <td>#@log.OrderId</td>
                 <td>
-                    @if (log.PaymentStatus == "SUCCESS")
+                    @if (log.Status == "SUCCESS")
                     {
                         <span class="badge bg-success">Başarılı</span>
                     }

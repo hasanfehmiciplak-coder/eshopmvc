@@ -1,14 +1,16 @@
-﻿using EShopMVC.Modules.Orders.Models;
+﻿using EShopMVC.Modules.Orders.Domain.Entities;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 
 public class OrderInvoiceDocument : IDocument
 {
     private readonly Order _order;
+    private readonly string _userEmail; // 👈 EKLEDİK
 
-    public OrderInvoiceDocument(Order order)
+    public OrderInvoiceDocument(Order order, string userEmail)
     {
         _order = order;
+        _userEmail = userEmail;
     }
 
     public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
@@ -29,9 +31,8 @@ public class OrderInvoiceDocument : IDocument
                 col.Spacing(10);
 
                 col.Item().Text($"Sipariş No: {_order.Id}");
-                col.Item().Text($"Tarih: {_order.CreatedDate:dd.MM.yyyy}");
-                col.Item().Text($"Müşteri: {_order.User.FullName}");
-                col.Item().Text($"Email: {_order.User.Email}");
+                col.Item().Text($"Tarih: {_order.OrderDate:dd.MM.yyyy}"); // ✔ FIX
+                col.Item().Text($"Müşteri Email: {_userEmail}"); // ✔ FIX
 
                 col.Item().LineHorizontal(1);
 
@@ -53,9 +54,9 @@ public class OrderInvoiceDocument : IDocument
                         h.Cell().Text("Toplam").Bold();
                     });
 
-                    foreach (var item in _order.OrderItems)
+                    foreach (var item in _order.Items)
                     {
-                        table.Cell().Text(item.Product.Name);
+                        table.Cell().Text(item.ProductId.ToString()); // ✔ FIX
                         table.Cell().Text(item.Quantity.ToString());
                         table.Cell().Text($"{item.Price} ₺");
                         table.Cell().Text($"{item.Quantity * item.Price} ₺");

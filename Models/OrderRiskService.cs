@@ -1,5 +1,5 @@
 ﻿using EShopMVC.Infrastructure.Data;
-using EShopMVC.Modules.Orders.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShopMVC.Models
@@ -18,7 +18,7 @@ namespace EShopMVC.Models
             int score = 0;
 
             var failCount = await _context.PaymentLogs
-                .Where(x => x.OrderId == orderId && x.PaymentStatus != "SUCCESS")
+                .Where(x => x.OrderId == orderId && x.Status != "SUCCESS")
                 .CountAsync();
 
             if (failCount >= 3)
@@ -33,8 +33,8 @@ namespace EShopMVC.Models
             if (hasFraudFlag)
                 score += 30;
 
-            var refundCount = await _context.PartialRefunds
-                .Where(x => x.OrderId == orderId)
+            var refundCount = await _context.Refunds
+                .Where(x => x.OrderItemId == orderId)
                 .CountAsync();
 
             if (refundCount > 0)

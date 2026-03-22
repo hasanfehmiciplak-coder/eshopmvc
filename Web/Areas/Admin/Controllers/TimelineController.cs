@@ -21,7 +21,7 @@ namespace EShopMVC.Areas.Admin.Controllers
                     _context.PaymentLogs.Find(id)),
 
                 "Refund" => PartialView("_RefundDetail",
-                    _context.PartialRefunds.Find(id)),
+                    _context.Refunds.Find(id)),
 
                 "Fraud" => PartialView("_FraudDetail",
                     _context.FraudFlags.Find(id)),

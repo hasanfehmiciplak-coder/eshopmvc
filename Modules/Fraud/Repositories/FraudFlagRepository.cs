@@ -14,7 +14,7 @@ namespace EShopMVC.Modules.Fraud.Repositories
             _context = context;
         }
 
-        public bool Exists(Guid refundId, FraudReason reason)
+        public bool Exists(int? refundId, FraudReason reason)
         {
             return _context.FraudFlags
                 .Any(x =>

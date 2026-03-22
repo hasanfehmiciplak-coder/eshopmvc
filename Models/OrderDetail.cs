@@ -1,6 +1,7 @@
 ﻿using EShopMVC.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
 
-namespace EShopMVC.Modules.Orders.Models
+namespace EShopMVC.Modules.Orders.Domain
 {
     public class OrderDetail
     {

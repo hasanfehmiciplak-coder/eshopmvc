@@ -26,16 +26,20 @@ namespace EShopMVC.Infrastructure.Jobs
         public async Task SendOrderSuccessMail(int orderId)
         {
             var order = await _context.Orders
-                .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == orderId);
 
             if (order == null)
                 throw new Exception("Order not found");
 
+            var userEmail = await _context.Users
+                .Where(u => u.Id == order.UserId)
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync();
+
             var mailModel = new OrderSuccessMailVM
             {
                 OrderId = order.Id,
-                UserEmail = order.User.Email,
+                UserEmail = userEmail,
                 TotalPrice = order.TotalPrice,
                 OrderDate = order.OrderDate
             };
@@ -59,16 +63,20 @@ namespace EShopMVC.Infrastructure.Jobs
         public async Task SendPaymentFailedMail(int orderId, string? errorMessage)
         {
             var order = await _context.Orders
-                .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == orderId);
 
             if (order == null)
                 throw new Exception("Order not found");
 
+            var userEmail = await _context.Users
+                .Where(u => u.Id == order.UserId)
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync();
+
             var vm = new PaymentFailedMailVM
             {
                 OrderId = order.Id,
-                UserEmail = order.User.Email,
+                UserEmail = userEmail,
                 ErrorMessage = errorMessage
             };
 

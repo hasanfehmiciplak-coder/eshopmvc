@@ -1,4 +1,5 @@
 ﻿using EShopMVC.Models;
+using EShopMVC.Modules.Orders.Domain.Enums;
 
 namespace EShopMVC.Areas.Admin.ViewModels
 {

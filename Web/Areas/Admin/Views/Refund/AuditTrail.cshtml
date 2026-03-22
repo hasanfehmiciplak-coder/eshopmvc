@@ -1,64 +1,42 @@
-﻿@using EShopMVC.Modules.Payments.Models
-@using EShopMVC.Models
-@model PartialRefund
+﻿@using EShopMVC.Models
+@using EShopMVC.Modules.Orders.Domain.Enums
+@using EShopMVC.Modules.Orders.Domain.Refunds
+@using EShopMVC.Modules.Payments.Models
+@using EShopMVC.Web.ViewModels
+@using Refund = EShopMVC.Modules.Orders.Domain.Entities.Refund;
 
-<h3>🧾 İade Audit Trail</h3>
+@model Refund
+
+
+<h3>🧾 İade Detayı</h3>
 
 <div class="mb-3">
-    <strong>Sipariş:</strong> #@Model.OrderId <br />
-    <strong>Ürün:</strong> @Model.OrderItem.Product.Name <br />
+    <strong>Sipariş:</strong> #@Model.OrderItemId <br />
+    <strong>Ürün:</strong> @Model.OrderItemId <br />
     <strong>Adet:</strong> @Model.Quantity <br />
-    <strong>Tutar:</strong> @Model.RefundAmount ₺ <br />
+    <strong>Tutar:</strong> @Model.Amount ₺ <br />
     <strong>Durum:</strong>
     <span class="badge bg-info">@Model.Status</span>
 </div>
 
 <hr />
 
-<h5>📜 İşlem Geçmişi</h5>
-
 <table class="table table-bordered table-sm">
     <thead>
         <tr>
             <th>Tarih</th>
-            <th>İşlem</th>
-            <th>Sağlayıcı</th>
+            <th>Durum</th>
             <th>Tutar</th>
-            <th>Detay</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var log in Model.RefundLogs.OrderBy(x => x.CreatedAt))
-        {
-            <tr>
-                <td>@log.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                <td>
-                    @if (log.Status == RefundStatus.Success)
-                    {
-                        <span class="badge bg-success">Başarılı</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">Başarısız</span>
-                    }
-                </td>
-                <td>@log.Provider</td>
-                <td>@log.Amount ₺</td>
-                <td>
-                    @if (!string.IsNullOrEmpty(log.ErrorMessage))
-                    {
-                        <span class="text-danger">@log.ErrorMessage</span>
-                    }
-                    else
-                    {
-                        <span class="text-muted">—</span>
-                    }
-                </td>
-            </tr>
-        }
+        <tr>
+            <td>@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+            <td>@Model.Status</td>
+            <td>@Model.Amount ₺</td>
+        </tr>
     </tbody>
 </table>
-
 <hr />
 
 <a asp-action="RefundPdf"

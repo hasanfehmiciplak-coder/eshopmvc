@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Hangfire;
 using EShopMVC.Repositories.Refunds;
 using EShopMVC.Models;
-using EShopMVC.Services.Refunds;
+using EShopMVC.Modules.Orders.Application.Services;
 using EShopMVC.Infrastructure.Jobs;
 using EShopMVC.Infrastructure.Data;
+using EShopMVC.Modules.Orders.Domain.Enums;
+using Refund = EShopMVC.Modules.Orders.Domain.Entities.Refund;
 
 namespace EShopMVC.Areas.Admin.Controllers
 {
@@ -16,12 +18,12 @@ namespace EShopMVC.Areas.Admin.Controllers
     public class RefundController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly IRefundService _refundService;
+        private readonly RefundService _refundService;
         private readonly IRefundRepository _refundRepository;
 
         public RefundController(
             AppDbContext context,
-            IRefundService refundService,
+            RefundService refundService,
             IRefundRepository refundRepository)
         {
             _context = context;
@@ -32,48 +34,34 @@ namespace EShopMVC.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Partial([FromBody] RefundRequestVM model)
         {
-            // 1️⃣ BASIC VALIDATION
             if (!ModelState.IsValid)
                 return BadRequest("Geçersiz istek");
 
-            // 2️⃣ ORDER + ITEMS
             var order = await _context.Orders
-                .Include(o => o.OrderItems)
+                .Include(o => o.Items)
+                .Include(o => o.FraudFlags)
                 .FirstOrDefaultAsync(o => o.Id == model.OrderId);
 
             if (order == null)
                 return NotFound("Sipariş bulunamadı");
 
-            // 3️⃣ ORDER ITEM
-            var item = order.OrderItems
-                .FirstOrDefault(x => x.Id == model.OrderItemId);
+            var item = order.Items.FirstOrDefault(x => x.Id == model.OrderItemId);
 
             if (item == null)
                 return BadRequest("Sipariş ürünü bulunamadı");
 
-            // 4️⃣ QUANTITY CHECK
             var refundableQty = item.Quantity - item.RefundedQuantity;
 
             if (model.Quantity <= 0 || model.Quantity > refundableQty)
                 return BadRequest("Geçersiz iade miktarı");
 
-            // 5️⃣ PAID CHECK
             if (!order.IsPaid)
                 return BadRequest("Ödenmemiş sipariş iade edilemez");
 
-            // FRAUD KONTROLÜ
             if (order.HasActiveHighFraud && !order.RefundOverrideEnabled)
-            {
                 return BadRequest("Bu siparişte yüksek seviye fraud var. Override gerekli.");
-            }
 
-            // 6️⃣ SERVICE CALL (PARA İŞİ)
-            var refund = new Refund
-            {
-                Status = RefundStatus.Pending,
-                RetryCount = 0,
-                NextRetryAt = null
-            };
+            var refund = new Refund(item.Id, model.Quantity, item.Price * model.Quantity);
 
             _context.Refunds.Add(refund);
             await _context.SaveChangesAsync();
@@ -90,7 +78,8 @@ namespace EShopMVC.Areas.Admin.Controllers
         public async Task<IActionResult> Full(int orderId)
         {
             var order = await _context.Orders
-                .Include(o => o.OrderItems)
+                .Include(o => o.Items)
+                .Include(o => o.FraudFlags)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
@@ -99,50 +88,46 @@ namespace EShopMVC.Areas.Admin.Controllers
             if (!order.IsPaid)
                 return BadRequest("Ödenmemiş sipariş iade edilemez");
 
-            // 🔒 Sipariş seviyesinde FRAUD kontrolü (tek sefer)
             if (order.HasActiveHighFraud && !order.RefundOverrideEnabled)
             {
                 return BadRequest("Bu siparişte yüksek seviye fraud var. Override gerekli.");
             }
 
-            bool anyRefundCreated = false;
+            var refunds = new List<Refund>();
 
-            foreach (var item in order.OrderItems)
+            foreach (var item in order.Items)
             {
                 var refundableQty = item.Quantity - item.RefundedQuantity;
 
                 if (refundableQty <= 0)
                     continue;
 
-                // 1️⃣ Refund kaydı oluştur
-                var refund = new Refund
-                {
-                    Status = RefundStatus.Pending,
-                    RetryCount = 0,
-                    NextRetryAt = null
-                };
-
-                _context.Refunds.Add(refund);
-                await _context.SaveChangesAsync(); // Refund.Id almak için gerekli
-
-                // 2️⃣ Refund işleme başlat (Gateway + Retry + Hangfire)
-                await _refundService.CreateRefundAsync(refund.Id);
-
-                anyRefundCreated = true;
+                refunds.Add(new Refund(item.Id, refundableQty, item.Price * refundableQty));
             }
 
-            // Hiç iade oluşmadıysa sipariş statüsünü değiştirme
-            if (anyRefundCreated)
+            if (!refunds.Any())
+                return Ok(new { success = false });
+
+            _context.Refunds.AddRange(refunds);
+
+            await _context.SaveChangesAsync(); // ✅ TEK DB CALL
+
+            // Refund işlemlerini başlat
+            foreach (var refund in refunds)
             {
-                order.Status = OrderStatus.Refunded;
-                await _context.SaveChangesAsync();
+                BackgroundJob.Enqueue<RefundRetryJob>(
+                job => job.ExecuteAsync(refund.Id));
             }
+
+            order.MarkAsRefunded();
+
+            await _context.SaveChangesAsync();
 
             return Ok(new { success = true });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Retry(Guid refundId)
+        public async Task<IActionResult> Retry(int refundId)
         {
             var refund = await _context.Refunds
                 .FirstOrDefaultAsync(r => r.Id == refundId);
@@ -169,7 +154,7 @@ namespace EShopMVC.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RetryNow(Guid id)
+        public async Task<IActionResult> RetryNow(int id)
         {
             var refund = await _refundRepository.GetAsync(id);
 
@@ -197,13 +182,18 @@ namespace EShopMVC.Areas.Admin.Controllers
         [Authorize(Roles = "Admin,Finance")]
         public async Task<IActionResult> Approve(int refundId)
         {
-            //await _refundService.ApproveRefundAsync(
-            //    refundId,
-            //    User.Identity?.Name
-            //);
-
             TempData["Success"] = "İade onaylandı ve işlendi.";
             return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Pending()
+        {
+            var refunds = await _context.Refunds
+                //.Include(x => x.OrderItem)
+                .Where(x => x.Status == RefundStatus.Pending)
+                .ToListAsync();
+
+            return View(refunds);
         }
     }
 }

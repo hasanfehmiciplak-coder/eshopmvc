@@ -1,5 +1,6 @@
 ﻿@using EShopMVC.Modules.Orders
-@using EShopMVC.Modules.Orders.Models
+@using EShopMVC.Modules.Orders.Domain.Entities
+@using EShopMVC.Modules.Orders.Domain
 @model Order
 
 <div class="container mt-5">
@@ -23,10 +24,10 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.OrderItems)
+            @foreach (var item in Model.Items)
             {
                 <tr>
-                    <td>@item.Product.Name</td>
+                    <td>@item.ProductId</td>
                     <td>@item.Quantity</td>
                     <td>@item.Price ₺</td>
                     <td>@(item.Price* item.Quantity) ₺</td>

@@ -1,4 +1,4 @@
-﻿using EShopMVC.Modules.Orders.Models;
+﻿using EShopMVC.Modules.Orders.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace EShopMVC.Models

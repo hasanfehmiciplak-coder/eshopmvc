@@ -1,6 +1,6 @@
 ﻿using EShopMVC.Infrastructure.Data;
 using EShopMVC.Models;
-using EShopMVC.Modules.Orders.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

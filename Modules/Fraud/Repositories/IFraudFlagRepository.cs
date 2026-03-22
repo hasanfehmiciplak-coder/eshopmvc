@@ -7,7 +7,7 @@ namespace EShopMVC.Modules.Fraud.Repositories
     public interface IFraudFlagRepository
     {
         // 1️⃣ Aynı flag var mı? (idempotency)
-        bool Exists(Guid? refundId, FraudReason reason);
+        bool Exists(int? refundId, FraudReason reason);
 
         // 2️⃣ Yeni fraud flag ekle
         void Add(FraudFlag flag);

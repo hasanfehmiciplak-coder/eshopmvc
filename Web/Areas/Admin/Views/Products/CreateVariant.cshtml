@@ -1,0 +1,33 @@
+﻿@model EShopMVC.Models.ProductVariant
+
+<h2>Add Variant</h2>
+
+<form asp-action="CreateVariant" method="post">
+
+    <input type="hidden" asp-for="ProductId" value="@ViewBag.ProductId" />
+
+    <div class="mb-3">
+        <label>Size</label>
+        <input asp-for="Size" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Color</label>
+        <input asp-for="Color" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Stock</label>
+        <input asp-for="Stock" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>SKU</label>
+        <input asp-for="Sku" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Add Variant
+    </button>
+
+</form>

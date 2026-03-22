@@ -1,14 +1,18 @@
-﻿using EShopMVC.Modules.Orders.Models;
+﻿using EShopMVC.Modules.Orders.Domain.Entities;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 
 public class InvoiceDocument : IDocument
 {
     private readonly Order _order;
+    private readonly string _userEmail;
+    private readonly string _userName;
 
-    public InvoiceDocument(Order order)
+    public InvoiceDocument(Order order, string userEmail, string userName)
     {
         _order = order;
+        _userEmail = userEmail;
+        _userName = userName;
     }
 
     public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
@@ -30,8 +34,8 @@ public class InvoiceDocument : IDocument
 
                 col.Item().Text($"Sipariş No: #{_order.Id}");
                 col.Item().Text($"Tarih: {_order.OrderDate:dd.MM.yyyy}");
-                col.Item().Text($"Müşteri: {_order.User.FullName}");
-                col.Item().Text($"Email: {_order.User.Email}");
+                col.Item().Text($"Müşteri: {_userName}"); // ✔ FIX
+                col.Item().Text($"Email: {_userEmail}"); // ✔ FIX
 
                 col.Item().LineHorizontal(1);
 
@@ -53,9 +57,9 @@ public class InvoiceDocument : IDocument
                         header.Cell().Text("Toplam").Bold();
                     });
 
-                    foreach (var item in _order.OrderItems)
+                    foreach (var item in _order.Items)
                     {
-                        table.Cell().Text(item.Product.Name);
+                        table.Cell().Text(item.ProductId.ToString()); // ✔ FIX
                         table.Cell().Text(item.Quantity.ToString());
                         table.Cell().Text($"{item.Price} ₺");
                         table.Cell().Text($"{item.Quantity * item.Price} ₺");
@@ -93,8 +97,8 @@ public class InvoiceDocument : IDocument
 
                     col.Item().Text($"Sipariş No: {_order.Id}");
                     col.Item().Text($"Tarih: {_order.OrderDate:dd.MM.yyyy}");
-                    col.Item().Text($"Müşteri: {_order.User.FullName}");
-                    col.Item().Text($"Email: {_order.User.Email}");
+                    col.Item().Text($"Müşteri: {_userName}");
+                    col.Item().Text($"Email: {_userEmail}");
 
                     col.Item().LineHorizontal(1);
 
@@ -116,16 +120,17 @@ public class InvoiceDocument : IDocument
                             header.Cell().Text("Toplam").Bold();
                         });
 
-                        foreach (var item in _order.OrderItems)
+                        foreach (var item in _order.Items)
                         {
-                            table.Cell().Text(item.Product.Name);
+                            table.Cell().Text(item.ProductId.ToString());
                             table.Cell().Text(item.Quantity.ToString());
                             table.Cell().Text($"{item.Price} ₺");
                             table.Cell().Text($"{item.Price * item.Quantity} ₺");
                         }
                     });
 
-                    col.Item().AlignRight().Text($"Toplam: {_order.TotalPrice} ₺")
+                    col.Item().AlignRight()
+                        .Text($"Toplam: {_order.TotalPrice} ₺")
                         .FontSize(14)
                         .Bold();
                 });

@@ -53,10 +53,10 @@ namespace EShopMVC.Web.Controllers
                 query = query.Where(p => p.Name.Contains(searchString));
 
             if (minPrice.HasValue)
-                query = query.Where(p => p.Price >= minPrice.Value);
+                query = query.Where(p => p.UnitPrice >= minPrice.Value);
 
             if (maxPrice.HasValue)
-                query = query.Where(p => p.Price <= maxPrice.Value);
+                query = query.Where(p => p.UnitPrice <= maxPrice.Value);
 
             int totalItems = query.Count();
 
@@ -81,27 +81,32 @@ namespace EShopMVC.Web.Controllers
         // ============================================
         // 2) AJAX Ürün Listeleme (Scroll/Paging)
         // ============================================
-        public IActionResult ProductList(int page = 1, string? searchString = null,
+        public async Task<IActionResult> ProductListAsync(int page = 1, string? searchString = null,
             string? sortOrder = null, decimal? minPrice = null, decimal? maxPrice = null)
         {
             int pageSize = 8;
 
-            var query = _context.Products.Include(p => p.Category).AsQueryable();
+            var query = _context.Products
+                .Include(p => p.Category)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
                 query = query.Where(p => p.Name.Contains(searchString));
 
             if (minPrice.HasValue)
-                query = query.Where(p => p.Price >= minPrice.Value);
+                query = query.Where(p => p.UnitPrice >= minPrice.Value);
 
             if (maxPrice.HasValue)
-                query = query.Where(p => p.Price <= maxPrice.Value);
+                query = query.Where(p => p.UnitPrice <= maxPrice.Value);
 
-            int totalItems = query.Count();
+            page = page < 1 ? 1 : page;
 
-            var products = query.Skip((page - 1) * pageSize)
-                                .Take(pageSize)
-                                .ToList();
+            int totalItems = await query.CountAsync();
+
+            var products = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             var model = new ProductListVM
             {

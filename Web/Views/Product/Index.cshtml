@@ -66,13 +66,16 @@
                         <div class="card-body">
                             <h5>@item.Name</h5>
                             <p class="text-muted">@item.Category.Name</p>
-                            <strong>@item.Price ₺</strong>
+                            <strong>@item.UnitPrice ₺</strong>
                         </div>
                         <div class="card-footer text-center">
-                            <button class="btn btn-sm btn-outline-primary"
-                                    onclick="openProductModal(@item.Id)">
-                                Detay
-                            </button>
+                            <a asp-controller="Product"
+                               asp-action="Detail"
+                               asp-route-id="@item.Id">
+
+                            @item.Name
+
+                            </a>
                         </div>
                     </div>
                 </div>

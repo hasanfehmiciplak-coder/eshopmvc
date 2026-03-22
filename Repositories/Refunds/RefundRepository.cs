@@ -1,5 +1,6 @@
 ﻿using EShopMVC.Infrastructure.Data;
-using EShopMVC.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
+using EShopMVC.Modules.Orders.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShopMVC.Repositories.Refunds
@@ -13,7 +14,7 @@ namespace EShopMVC.Repositories.Refunds
             _context = context;
         }
 
-        public async Task<Refund> GetAsync(Guid refundId)
+        public async Task<Refund> GetAsync(int refundId)
         {
             return await _context.Refunds
                 .FirstOrDefaultAsync(x => x.Id == refundId);
@@ -25,13 +26,14 @@ namespace EShopMVC.Repositories.Refunds
             await _context.SaveChangesAsync();
         }
 
-        // 🔥 SENİN EKLEDİĞİN METOT (DOĞRU YERDE)
         public async Task<int> DeleteCompletedOlderThanAsync(DateTime olderThan)
         {
             var oldRefunds = _context.Refunds
-                .Where(x => x.Status == RefundStatus.Completed);
+                .Where(x => x.Status == RefundStatus.Completed
+                         && x.CreatedAt < olderThan);
 
             _context.Refunds.RemoveRange(oldRefunds);
+
             return await _context.SaveChangesAsync();
         }
     }

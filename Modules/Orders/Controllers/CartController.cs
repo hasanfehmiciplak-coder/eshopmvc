@@ -1,7 +1,8 @@
 ﻿using EShopMVC.Infrastructure.Data;
-using EShopMVC.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace EShopMVC.Modules.Orders.Controllers
 {
@@ -18,6 +19,55 @@ namespace EShopMVC.Modules.Orders.Controllers
             _cartService = cartService;
             _logger = logger;
             _context = context;
+        }
+
+        private const string CartSession = "Cart";
+
+        public async Task<IActionResult> Index()
+        {
+            var items = await _cartService.GetItemsAsync();
+            return View(items);
+        }
+
+        public IActionResult AddToCart(CartItem item)
+        {
+            var cart = GetCart();
+
+            var existing = cart.FirstOrDefault(x =>
+                x.ProductId == item.ProductId &&
+                x.VariantId == item.VariantId);
+
+            if (existing != null)
+            {
+                existing.Quantity++;
+            }
+            else
+            {
+                item.Quantity = 1;
+                cart.Add(item);
+            }
+
+            SaveCart(cart);
+
+            return RedirectToAction("Index");
+        }
+
+        private List<CartItem> GetCart()
+        {
+            var cart = HttpContext.Session.GetString(CartSession);
+
+            if (cart == null)
+                return new List<CartItem>();
+
+            return JsonConvert.DeserializeObject<List<CartItem>>(cart);
+        }
+
+        //<<-- -->>
+        private void SaveCart(List<CartItem> cart)
+        {
+            HttpContext.Session.SetString(
+                CartSession,
+                JsonConvert.SerializeObject(cart));
         }
 
         [Authorize]
@@ -39,12 +89,6 @@ namespace EShopMVC.Modules.Orders.Controllers
         {
             var count = await _cartService.GetItemCountAsync();
             return Json(count);
-        }
-
-        public async Task<IActionResult> Index()
-        {
-            var items = await _cartService.GetItemsAsync();
-            return View(items);
         }
 
         [Authorize]

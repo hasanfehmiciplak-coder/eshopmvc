@@ -25,7 +25,7 @@ public class UserFraudService
             var failCount = await _context.PaymentLogs
                 .CountAsync(x =>
                     x.OrderId == order.Id &&
-                    x.PaymentStatus != "SUCCESS");
+                    x.Status != "SUCCESS");
 
             if (failCount >= 3)
                 score += 20;
@@ -39,8 +39,8 @@ public class UserFraudService
             if (fraud)
                 score += 30;
 
-            var refund = await _context.PartialRefunds
-                .AnyAsync(x => x.OrderId == order.Id);
+            var refund = await _context.Refunds
+                .AnyAsync(x => x.OrderItemId == order.Id);
 
             if (refund)
                 score += 10;
@@ -52,7 +52,7 @@ public class UserFraudService
             "Low";
 
         var existing = await _context.UserFraudScores
-            .FirstOrDefaultAsync(x => x.UserId == userId);
+            .FirstOrDefaultAsync(x => x.User.Id == userId);
 
         if (existing == null)
         {

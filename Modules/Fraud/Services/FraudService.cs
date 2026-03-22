@@ -3,7 +3,7 @@ using EShopMVC.Models;
 using EShopMVC.Models.Fraud;
 using EShopMVC.Modules.Fraud.Models;
 using EShopMVC.Modules.Fraud.Repositories;
-using EShopMVC.Modules.Orders.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -25,7 +25,7 @@ namespace EShopMVC.Modules.Fraud.Services
             _context = context;
         }
 
-        public FraudFlag? EvaluateRefund(Order order, Refund refund)
+        public FraudFlag? EvaluateRefund(Order order, Orders.Domain.Entities.Refund refund)
         {
             throw new NotImplementedException();
         }

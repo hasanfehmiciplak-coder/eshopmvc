@@ -1,4 +1,4 @@
-﻿namespace EShopMVC.Shared.Events
+﻿namespace EShopMVC.Shared.Domain.Events
 {
     public abstract class DomainEvent
     {

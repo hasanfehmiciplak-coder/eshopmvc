@@ -1,8 +1,11 @@
 ﻿@model List<Order>
 @using EShopMVC.Models
 @using EShopMVC.Modules.Orders
-@using EShopMVC.Modules.Orders.Models
-<h3>Siparişlerim</h3>
+@using EShopMVC.Modules.Orders.Domain.Entities
+@using EShopMVC.Modules.Orders.Domain
+@using EShopMVC.Modules.Orders.Domain.Enums
+ 
+ <h3>Siparişlerim</h3>
 
 
 @if (!Model.Any())
@@ -58,7 +61,10 @@ else
                             </a>
                         }
                     </td>
+
                 </tr>
+
+                
             }
         </tbody>
 

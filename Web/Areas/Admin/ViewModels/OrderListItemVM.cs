@@ -1,5 +1,6 @@
 ﻿using EShopMVC.Models;
 using EShopMVC.Models.Fraud;
+using EShopMVC.Modules.Orders.Domain.Enums;
 
 namespace EShopMVC.Areas.Admin.ViewModels
 {

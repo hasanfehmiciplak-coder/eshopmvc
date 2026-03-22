@@ -8,6 +8,8 @@ using EShopMVC.Models.Fraud;
 using EShopMVC.Models.TimeLine;
 using EShopMVC.Modules.Fraud.Models;
 using EShopMVC.Modules.Fraud.Services;
+using EShopMVC.Modules.Orders.Domain.Enums;
+using EShopMVC.Modules.Orders.Domain.Logs;
 using EShopMVC.Modules.Payments.Models;
 using Hangfire;
 using Iyzipay;
@@ -204,29 +206,19 @@ namespace EShopMVC.Web.Controllers
                 return NotFound();
 
             // 7️⃣ PAYMENT LOG (SADECE 1 TANE)
-            var log = new PaymentLog
-            {
-                OrderId = order.Id,
-                Provider = "Iyzico",
-                ConversationId = response.BasketId ?? "",
-                PaymentTransactionId = transactionId ?? "",
-                PaymentStatus = response.PaymentStatus ?? "UNKNOWN",
-                Status = response.Status ?? "FAILED",
-                ErrorCode = response.ErrorCode,
-                ErrorMessage = response.ErrorMessage,
-                PaidAmount = order.TotalPrice,
-                RawResponse = rawResponse ?? "",
-                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
-            };
-
+            var log = new PaymentLog(
+                order.Id,
+                order.TotalPrice,
+                "Iyzico",
+                response.PaymentStatus ?? "FAILED"
+            );
             _context.PaymentLogs.Add(log);
 
             // 8️⃣ ORDER STATUS
-            if (response.PaymentStatus == "SUCCESS")
+            if (response.Status == "SUCCESS")
             {
                 order.IsPaid = true;
-                order.Status = OrderStatus.Paid;
-                order.PaymentTransactionId = transactionId;
+                order.SetStatus(OrderStatus.Paid);
 
                 BackgroundJob.Enqueue<OrderMailJob>(
                     job => job.SendOrderSuccessMail(order.Id)
@@ -234,7 +226,7 @@ namespace EShopMVC.Web.Controllers
             }
             else
             {
-                order.Status = OrderStatus.PaymentFailed;
+                order.SetStatus(OrderStatus.PaymentFailed);
 
                 BackgroundJob.Enqueue<OrderMailJob>(
                     job => job.SendPaymentFailedMail(
@@ -259,15 +251,11 @@ namespace EShopMVC.Web.Controllers
 
             if (probability >= 0.80)
             {
-                order.Status = OrderStatus.Blocked;
+                order.SetStatus(OrderStatus.Blocked);
 
-                _context.FraudFlags.Add(new FraudFlag
-                {
-                    OrderId = order.Id,
-                    RuleCode = "REALTIME_BLOCK",
-                    Description = "Real-time fraud detection triggered.",
-                    CreatedAt = DateTime.UtcNow
-                });
+                var fraud = FraudFlag.CreateRefundTooFast(order.Id);
+
+                _context.FraudFlags.Add(fraud);
 
                 await _timelineService.AddAsync(
                     order.Id,
@@ -283,7 +271,7 @@ namespace EShopMVC.Web.Controllers
             await _fraudScoreService.CheckVelocityRule(order.Id);
 
             // 🔔 TIMELINE (DOĞRU VE SADE)
-            if (response.PaymentStatus == "SUCCESS")
+            if (response.Status == "SUCCESS")
             {
                 await _timelineService.AddAsync(
                     order.Id,
@@ -325,7 +313,7 @@ namespace EShopMVC.Web.Controllers
 
                 // 🔎 Ödeme başarısız sayısını kontrol et
                 var failCount = await _context.PaymentLogs
-                    .Where(x => x.OrderId == order.Id && x.PaymentStatus != "SUCCESS")
+                    .Where(x => x.OrderId == order.Id && x.Status != "SUCCESS")
                     .CountAsync();
 
                 var existingFlag = await _context.FraudFlags
@@ -335,13 +323,13 @@ namespace EShopMVC.Web.Controllers
 
                 if (!existingFlag && failCount >= 5)
                 {
-                    _context.FraudFlags.Add(new FraudFlag
-                    {
-                        OrderId = order.Id,
-                        RuleCode = "PAYMENT_RETRY_LIMIT",
-                        Description = "Bu sipariş için çok fazla ödeme denemesi yapıldı.",
-                        CreatedAt = DateTime.UtcNow
-                    });
+                    //_context.FraudFlags.Add(new FraudFlag
+                    //{
+                    //    OrderId = order.Id,
+                    //    RuleCode = "PAYMENT_RETRY_LIMIT",
+                    //    Description = "Bu sipariş için çok fazla ödeme denemesi yapıldı.",
+                    //    CreatedAt = DateTime.UtcNow
+                    //});
 
                     await _context.SaveChangesAsync();
 
@@ -396,7 +384,7 @@ namespace EShopMVC.Web.Controllers
         public async Task<IActionResult> Success(int orderId)
         {
             var order = await _context.Orders
-                .Include(o => o.OrderItems)
+                .Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
@@ -408,8 +396,8 @@ namespace EShopMVC.Web.Controllers
         public async Task<IActionResult> RetryPayment(int orderId)
         {
             var order = await _context.Orders
-                .Include(o => o.OrderItems)
-                 .ThenInclude(oi => oi.Product)
+                .Include(o => o.Items)
+                 .ThenInclude(oi => oi.ProductName)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
@@ -451,13 +439,13 @@ namespace EShopMVC.Web.Controllers
             };
 
             // 3️⃣ BASKET ITEMS
-            request.BasketItems = order.OrderItems.Select(item => new BasketItem
+            request.BasketItems = order.Items.Select(item => new BasketItem
             {
                 Id = item.Id.ToString(),
-                Name = item.Product.Name,
+                Name = item.ProductName,
                 Category1 = "Ürün",
                 ItemType = BasketItemType.PHYSICAL.ToString(),
-                Price = (item.UnitPrice * item.Quantity)
+                Price = (item.Price * item.Quantity)
                     .ToString("0.00", CultureInfo.InvariantCulture)
             }).ToList();
 

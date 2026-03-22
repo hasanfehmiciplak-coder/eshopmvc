@@ -1,7 +1,9 @@
-﻿@model List<Order>
+﻿@model List<OrderListVM>
 @using EShopMVC.Helpers
 @using EShopMVC.Modules.Orders
-@using EShopMVC.Modules.Orders.Models
+@using EShopMVC.Modules.Orders.Domain.Entities
+@using EShopMVC.Modules.Orders.Domain
+@using EShopMVC.Web.Areas.Admin.ViewModels
 
 <h2>📦 Sipariş Yönetimi</h2>
 
@@ -21,8 +23,8 @@
         {
             <tr>
                 <td>@order.Id</td>
-                <td>@order.User.Email</td>
-                <td>@order.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@order.UserEmail</td>
+                <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
                 <td>@order.TotalPrice ₺</td>
                 <td>
                     <span class="badge @OrderStatusHelper.BadgeClass(order.Status)">

@@ -1,7 +1,8 @@
 ﻿@using EShopMVC.Areas.Admin.ViewModels.Orders
 @using EShopMVC.Models.TimeLine
 @using EShopMVC.Modules.Orders
-@using EShopMVC.Modules.Orders.Models
+@using EShopMVC.Modules.Orders.Domain
+@using EShopMVC.Modules.Orders.Domain.Enums
 
 @model OrderDetailViewModel
 @{
@@ -147,36 +148,23 @@ else if (ViewBag.RiskScore >= 40)
 
     </div>
 
-<h5 class="mt-4">Sipariş Durumu</h5>
+<h3 class="mt-4">Order Timeline</h3>
 
-<div class="timeline">
-
+<div class="order-timeline">
     @foreach (var item in ViewBag.Timeline)
     {
-        <div class="timeline-item">
-
-            <div class="timeline-icon @item.IconCss">
-                <i class="@item.Icon"></i>
-            </div>
+        <div class="timeline-row">
+            <div class="timeline-dot"></div>
 
             <div class="timeline-content">
-
-                <strong>@item.Title</strong>
-
-                <div class="text-muted small">
-                    @item.Date.ToString("dd.MM.yyyy HH:mm")
-                </div>
-
-                <div>
-                    @item.Description
-                </div>
-
+                <strong>@item.EventType</strong>
+                <div>@item.Description</div>
+                <small class="text-muted">@item.CreatedAt.ToString("dd MMM yyyy HH:mm")</small>
             </div>
-
         </div>
     }
-
 </div>
+
 @if (Model.Order.Status == OrderStatus.PaymentFailed)
 {
     <div class="alert alert-danger mt-3">
@@ -200,10 +188,10 @@ else if (ViewBag.RiskScore >= 40)
 
 <h4>Ürünler</h4>
 <ul>
-    @foreach (var item in Model.Order.OrderItems)
+    @foreach (var item in Model.Order.Items)
     {
         <li>
-            @item.Product.Name - @item.Quantity x @item.UnitPrice TL
+            @item.ProductName - @item.Quantity x @item.Price TL
         </li>
     }
 </ul>
@@ -261,5 +249,33 @@ else if (ViewBag.RiskScore >= 40)
         5 saniye içinde otomatik olarak Anasayfa’ya yönlendirileceksiniz.
     </div>
 }
+<style>
 
+    .order-timeline {
+        border-left: 3px solid #dee2e6;
+        margin-left: 10px;
+        padding-left: 20px;
+    }
 
+    .timeline-row {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: -31px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        background: #0d6efd;
+        border-radius: 50%;
+    }
+
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 6px;
+    }
+
+</style>

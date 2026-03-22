@@ -1,19 +1,19 @@
-﻿using EShopMVC.Services.Refunds;
+﻿using EShopMVC.Modules.Orders.Application.Services;
 using Hangfire;
 
 namespace EShopMVC.Infrastructure.Jobs
 {
     public class RefundRetryJob
     {
-        private readonly IRefundService _refundService;
+        private readonly RefundService _refundService;
 
-        public RefundRetryJob(IRefundService refundService)
+        public RefundRetryJob(RefundService refundService)
         {
             _refundService = refundService;
         }
 
         [AutomaticRetry(Attempts = 0)]
-        public async Task ExecuteAsync(Guid refundId)
+        public async Task ExecuteAsync(int refundId)
         {
             await _refundService.RetryRefundAsync(refundId);
         }

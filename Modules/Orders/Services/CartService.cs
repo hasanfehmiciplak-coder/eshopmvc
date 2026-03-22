@@ -1,6 +1,6 @@
 ﻿using EShopMVC.Infrastructure.Data;
 using EShopMVC.Models;
-using EShopMVC.Modules.Orders.Models;
+using EShopMVC.Modules.Orders.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.ReportingServices.Interfaces;
@@ -79,12 +79,7 @@ public class CartService : ICartService
 
         if (item == null)
         {
-            _context.CartItems.Add(new CartItem
-            {
-                CartId = cart.Id,
-                ProductId = productId,
-                Quantity = quantity
-            });
+            cart.AddItem(productId, quantity);
         }
         else
         {

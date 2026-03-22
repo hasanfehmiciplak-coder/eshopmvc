@@ -25,7 +25,7 @@ namespace EShopMVC.Areas.Admin.Controllers
 
             if (!string.IsNullOrWhiteSpace(status))
             {
-                query = query.Where(p => p.PaymentStatus == status);
+                query = query.Where(p => p.Status == status);
                 ViewBag.StatusFilter = status;
             }
 

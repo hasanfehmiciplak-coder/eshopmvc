@@ -1,5 +1,6 @@
 ﻿using EShopMVC.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Order = EShopMVC.Modules.Orders.Domain.Entities.Order;
 
 public class FraudGraphService
 {
@@ -13,15 +14,17 @@ public class FraudGraphService
     public async Task<object> GetGraphData()
     {
         var data = await _context.PaymentLogs
-            .Include(x => x.Order)
-            .ThenInclude(o => o.User)
+            .Where(x => x.IpAddress != null)
             .Select(x => new
             {
-                User = x.Order.User.Email,
+                User = _context.Users
+                    .Where(u => u.Id == x.Order.UserId)
+                    .Select(u => u.Email)
+                    .FirstOrDefault(),
+
                 Order = x.OrderId,
                 Ip = x.IpAddress
             })
-            .Where(x => x.Ip != null)
             .Take(50)
             .ToListAsync();
 

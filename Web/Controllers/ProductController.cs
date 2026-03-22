@@ -31,10 +31,10 @@ public class ProductController : Controller
             query = query.Where(p => p.CategoryId == vm.CategoryId);
 
         if (vm.MinPrice.HasValue)
-            query = query.Where(p => p.Price >= vm.MinPrice);
+            query = query.Where(p => p.UnitPrice >= vm.MinPrice);
 
         if (vm.MaxPrice.HasValue)
-            query = query.Where(p => p.Price <= vm.MaxPrice);
+            query = query.Where(p => p.UnitPrice <= vm.MaxPrice);
 
         if (vm.InStock)
             query = query.Where(p => p.Stock > 0);
@@ -45,8 +45,8 @@ public class ProductController : Controller
         // 🔃 SIRALAMA
         query = vm.Sort switch
         {
-            "price_asc" => query.OrderBy(p => p.Price),
-            "price_desc" => query.OrderByDescending(p => p.Price),
+            "price_asc" => query.OrderBy(p => p.UnitPrice),
+            "price_desc" => query.OrderByDescending(p => p.UnitPrice),
             "name" => query.OrderBy(p => p.Name),
             _ => query.OrderByDescending(p => p.CreatedDate) // newest (default)
         };
@@ -89,38 +89,51 @@ public class ProductController : Controller
         return PartialView("_ProductDetailsPartial", product);
     }
 
-    // 🔍 Ürün Detayı
     public async Task<IActionResult> Detail(int id)
     {
         var product = await _context.Products
-            .Include(p => p.Category)
-             .Include(p => p.Images)
-            .FirstOrDefaultAsync(p =>
-                p.Id == id &&
-                p.IsActive &&
-                p.Category.IsActive); // 🔥 EKLENDİ
+            .Include(p => p.Images)
+            .Include(p => p.Variants)
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (product == null)
             return NotFound();
 
-        var related = await _context.Products
-            .Include(p => p.Category) // 🔥 EKLENDİ (ÇOK ÖNEMLİ)
-            .Where(p =>
-                p.IsActive &&
-                p.Category.IsActive && // 🔥 EKLENDİ
-                p.Stock > 0 &&
-                p.CategoryId == product.CategoryId &&
-                p.Id != product.Id)
-            .OrderByDescending(p => p.Id)
-            .Take(4)
-            .ToListAsync();
-
-        ViewBag.RelatedProducts = related;
-
         return View(product);
     }
 
-    [Route("kategori/{slug}")]
+    // 🔍 Ürün Detayı
+    //public async Task<IActionResult> Detail(int id)
+    //{
+    //    var product = await _context.Products
+    //        .Include(p => p.Category)
+    //         .Include(p => p.Images)
+    //        .FirstOrDefaultAsync(p =>
+    //            p.Id == id &&
+    //            p.IsActive &&
+    //            p.Category.IsActive); // 🔥 EKLENDİ
+
+    //    if (product == null)
+    //        return NotFound();
+
+    //    var related = await _context.Products
+    //        .Include(p => p.Category) // 🔥 EKLENDİ (ÇOK ÖNEMLİ)
+    //        .Where(p =>
+    //            p.IsActive &&
+    //            p.Category.IsActive && // 🔥 EKLENDİ
+    //            p.Stock > 0 &&
+    //            p.CategoryId == product.CategoryId &&
+    //            p.Id != product.Id)
+    //        .OrderByDescending(p => p.Id)
+    //        .Take(4)
+    //        .ToListAsync();
+
+    //    ViewBag.RelatedProducts = related;
+
+    //    return View(product);
+    //}
+
+    //[Route("kategori/{slug}")]
     public IActionResult ByCategory(string slug)
     {
         var category = _context.Categories
