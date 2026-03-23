@@ -44,6 +44,8 @@ namespace EShopMVC.Modules.Orders.Domain.Entities
         public int Product { get; set; }
 
         public ICollection<FraudFlag> FraudFlags { get; private set; }
+
+        //public ICollection<Refund> PartialRefunds { get; set; } = new List<Refund>();
         public string Address { get; set; }
 
         public List<PaymentLog> PaymentLogs { get; set; }

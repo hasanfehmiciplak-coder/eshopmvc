@@ -10,9 +10,7 @@ namespace EShopMVC.Infrastructure.Data
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-            optionsBuilder.UseSqlServer(
-                "Server=(localdb)\\MSSQLLocalDB;Database=EShopMVCDb;Trusted_Connection=True;TrustServerCertificate=True"
-            );
+            optionsBuilder.UseSqlite("Data Source=eshop.db");
 
             return new AppDbContext(optionsBuilder.Options);
         }

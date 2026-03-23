@@ -8,8 +8,11 @@ namespace EShopMVC.Modules.Orders.Domain.Entities
         private Refund()
         { }
 
-        //public int OrderId { get; private set; }
-        //public Order Order { get; private set; }
+        public int Id { get; set; }
+
+        public int OrderId { get; set; }
+
+        public Order Order { get; set; }
 
         public int OrderItemId { get; private set; }
         public OrderItem OrderItem { get; private set; }
@@ -19,6 +22,8 @@ namespace EShopMVC.Modules.Orders.Domain.Entities
         public RefundStatus Status { get; set; }
 
         public int RetryCount { get; set; }
+
+        public ICollection<Refund> ChildRefunds { get; set; }
 
         public DateTime? NextRetryAt { get; set; }
 

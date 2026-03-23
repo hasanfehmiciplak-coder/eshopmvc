@@ -12,6 +12,10 @@ namespace EShopMVC.Modules.Orders.Domain.Refunds
         public Order Order { get; set; }
         public string UserEmail { get; set; }
 
+        public int RefundId { get; set; }
+
+        public Refund Refund { get; set; }
+
         public string PaymentTransactionId { get; set; }
 
         public decimal Amount { get; set; }
@@ -37,8 +41,6 @@ namespace EShopMVC.Modules.Orders.Domain.Refunds
         public int PartialRefundId { get; set; }
 
         public string Provider { get; set; } // iyzico
-
-        public Refund Refund { get; set; }
 
         public RefundLog(int orderId, string reason)
         {

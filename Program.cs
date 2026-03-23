@@ -15,6 +15,7 @@ using EShopMVC.Modules.Fraud.Services;
 using EShopMVC.Modules.Orders;
 using EShopMVC.Modules.Orders.Application;
 using EShopMVC.Modules.Orders.Application.Services;
+using EShopMVC.Modules.Orders.Domain.Services;
 using EShopMVC.Modules.Orders.Queries;
 using EShopMVC.Modules.Payments;
 using EShopMVC.Modules.Payments.Public;
@@ -44,17 +45,24 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Render port
+builder.WebHost.UseUrls("http://0.0.0.0:10000");
+
+// Logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// Database
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlite("Data Source=eshop.db");
+});
+
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 GlobalJobFilters.Filters.Add(
     new AutomaticRetryAttribute { Attempts = 0 });
-
-// DB
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .EnableSensitiveDataLogging()
-           .LogTo(Console.WriteLine));
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
@@ -68,13 +76,6 @@ builder.Services.Configure<EShopMVC.Models.IyzicoOptions>(
 );
 
 builder.Services.AddSingleton<JobFailureTimelineFilter>();
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .EnableSensitiveDataLogging()
-           .LogTo(Console.WriteLine);
-});
 
 builder.Services.AddSignalR();
 builder.Services.AddPaymentsModule();
@@ -169,6 +170,7 @@ builder.Services.AddScoped<OrderTimelineBuilder>();
 builder.Services.AddScoped<RefundService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<OrderMailJob>();
+builder.Services.AddScoped<RefundPolicy>();
 builder.Services.AddScoped<CheckoutService>();
 builder.Services.AddScoped<OrderRiskService>();
 builder.Services.AddScoped<FraudScoreService>();
@@ -247,11 +249,15 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
 builder.Logging.AddDebug();
-
 var app = builder.Build();
+
+// Auto migration
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 GlobalJobFilters.Filters.Add(
     app.Services.GetRequiredService<JobFailureTimelineFilter>()
@@ -269,7 +275,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();

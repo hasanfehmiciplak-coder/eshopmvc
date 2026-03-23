@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using System.Reflection.Emit;
 using System.Text.Json;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using OrderItem = EShopMVC.Modules.Orders.Domain.Entities.OrderItem;
@@ -97,6 +98,19 @@ namespace EShopMVC.Infrastructure.Data
                 entity.Property(m => m.Name).HasMaxLength(128);
             });
 
+            // Refund → Order
+            builder.Entity<Refund>()
+                .HasOne(r => r.Order)
+                .WithMany(o => o.PartialRefunds)
+                .HasForeignKey(r => r.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Refund>()
+                .HasOne(r => r.ParentRefund)
+                .WithMany(r => r.ChildRefunds)
+                .HasForeignKey(r => r.RefundId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Refund → OrderItem
             builder.Entity<Refund>()
                 .HasOne(r => r.OrderItem)
@@ -104,7 +118,7 @@ namespace EShopMVC.Infrastructure.Data
                 .HasForeignKey(r => r.OrderItemId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Refund → Refund (retry chain)
+            // Refund → ParentRefund
             builder.Entity<Refund>()
                 .HasOne(r => r.ParentRefund)
                 .WithMany()
@@ -125,12 +139,12 @@ namespace EShopMVC.Infrastructure.Data
                 .HasForeignKey(r => r.OrderId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // OrderTimeline → Order
-            builder.Entity<OrderTimeline>()
-                .HasOne<Order>()
-                .WithMany()
-                .HasForeignKey(t => t.OrderId)
-                .OnDelete(DeleteBehavior.NoAction);
+            // OrderItem → Order
+            builder.Entity<OrderItem>()
+                .HasOne(oi => oi.Order)
+                .WithMany(o => o.Items)   // Order içindeki OrderItem listesi
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // FraudFlag → Order
             builder.Entity<FraudFlag>()
@@ -139,11 +153,36 @@ namespace EShopMVC.Infrastructure.Data
                 .HasForeignKey(f => f.OrderId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            builder.Entity<RefundLog>()
+                .HasOne(r => r.Refund)
+                .WithMany()
+                .HasForeignKey(r => r.RefundId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Indexler
             builder.Entity<Order>()
                 .HasIndex(x => x.CreatedAt);
 
             builder.Entity<Refund>()
                 .HasIndex(x => x.Status);
+
+            builder.Entity<Refund>()
+                .HasOne(r => r.Order)
+                .WithMany(o => o.PartialRefunds)
+                .HasForeignKey(r => r.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Refund>()
+                .HasOne(r => r.OrderItem)
+                .WithMany()
+                .HasForeignKey(r => r.OrderItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Refund>()
+                .HasOne(r => r.ParentRefund)
+                .WithMany()
+                .HasForeignKey(r => r.RefundId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public override async Task<int> SaveChangesAsync(

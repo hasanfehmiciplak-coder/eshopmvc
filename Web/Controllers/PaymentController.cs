@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using EShopMVC.Helpers;
+﻿using EShopMVC.Helpers;
 using EShopMVC.Hubs;
 using EShopMVC.Infrastructure.Data;
 using EShopMVC.Infrastructure.Jobs;
